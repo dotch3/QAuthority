@@ -22,6 +22,7 @@ export interface Project {
 interface ProjectContextType {
   projects: Project[]
   selectedProject: Project | null
+  isOrgView: boolean
   isLoading: boolean
   error: string | null
   setSelectedProject: (project: Project | null) => void
@@ -79,6 +80,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     fetchProjects()
   }, [fetchProjects])
 
+  const isOrgView = selectedProject === null
+
   const setSelectedProject = (project: Project | null) => {
     setSelectedProjectState(project)
     if (project) {
@@ -93,6 +96,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       value={{
         projects,
         selectedProject,
+        isOrgView,
         isLoading,
         error,
         setSelectedProject,
