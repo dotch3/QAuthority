@@ -56,6 +56,18 @@ export function SetupWizard({ health }: { health: { database: string } }) {
       {step === 1 && (
         <div className="space-y-4">
           <div>
+            <Label>Language</Label>
+            <select
+              className="w-full border rounded p-2 bg-background text-sm"
+              value={form.language}
+              onChange={e => update('language', e.target.value)}
+            >
+              <option value="en">English</option>
+              <option value="pt">Português</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+          <div>
             <Label>Organization Name</Label>
             <Input value={form.orgName} onChange={e => update('orgName', e.target.value)} />
           </div>
