@@ -45,7 +45,7 @@ export class ETCharterService {
       include: {
         tester: { select: { id: true, name: true, email: true } },
         createdBy: { select: { id: true, name: true, email: true } },
-        linkedBugs: { include: { bug: true } },
+        linkedDefects: { include: { bug: true } },
         linkedTestCases: { include: { testCase: { select: { id: true, title: true } } } },
         linkedHeuristics: {
           include: {
@@ -67,7 +67,7 @@ export class ETCharterService {
       include: {
         tester: { select: { id: true, name: true, email: true } },
         createdBy: { select: { id: true, name: true, email: true } },
-        linkedBugs: { include: { bug: true } },
+        linkedDefects: { include: { bug: true } },
         linkedTestCases: { include: { testCase: { select: { id: true, title: true } } } },
         linkedHeuristics: {
           include: {

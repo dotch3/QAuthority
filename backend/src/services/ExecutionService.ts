@@ -60,7 +60,7 @@ export class ExecutionService {
         executedBy: {
           select: { id: true, name: true, email: true },
         },
-        bugs: {
+        defects: {
           include: {
             bug: true,
           },
@@ -84,7 +84,7 @@ export class ExecutionService {
         },
         status: true,
         _count: {
-          select: { bugs: true },
+          select: { defects: true },
         },
       },
       orderBy: { createdAt: "desc" },
