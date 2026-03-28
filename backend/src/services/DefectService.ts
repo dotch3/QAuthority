@@ -2,7 +2,7 @@ import { prisma } from "../infrastructure/database/prisma.js"
 import type { Defect } from "@prisma/client"
 import { NotFoundError, BadRequestError } from "../utils/errors.js"
 
-export interface CreateBugData {
+export interface CreateDefectData {
   projectId: string
   title: string
   description?: string
@@ -16,7 +16,7 @@ export interface CreateBugData {
   externalUrl?: string
 }
 
-export interface UpdateBugData {
+export interface UpdateDefectData {
   title?: string
   description?: string
   statusId?: string
@@ -27,7 +27,7 @@ export interface UpdateBugData {
 }
 
 export class DefectService {
-  async create(data: CreateBugData): Promise<Defect> {
+  async create(data: CreateDefectData): Promise<Defect> {
     return prisma.defect.create({
       data: {
         projectId: data.projectId,
@@ -92,10 +92,10 @@ export class DefectService {
     })
   }
 
-  async update(id: string, data: UpdateBugData): Promise<Defect> {
+  async update(id: string, data: UpdateDefectData): Promise<Defect> {
     const existing = await this.findById(id)
     if (!existing) {
-      throw new NotFoundError("Bug not found")
+      throw new NotFoundError("Defect not found")
     }
 
     return prisma.defect.update({
@@ -115,7 +115,7 @@ export class DefectService {
   async delete(id: string): Promise<void> {
     const existing = await this.findById(id)
     if (!existing) {
-      throw new NotFoundError("Bug not found")
+      throw new NotFoundError("Defect not found")
     }
 
     await prisma.defect.delete({
@@ -123,27 +123,27 @@ export class DefectService {
     })
   }
 
-  async linkToExecution(bugId: string, executionId: string): Promise<void> {
+  async linkToExecution(defectId: string, executionId: string): Promise<void> {
     await prisma.bugTestExecution.upsert({
       where: {
-        bugId_executionId: { bugId, executionId },
+        bugId_executionId: { bugId: defectId, executionId },
       },
-      create: { bugId, executionId },
+      create: { bugId: defectId, executionId },
       update: {},
     })
   }
 
-  async unlinkFromExecution(bugId: string, executionId: string): Promise<void> {
+  async unlinkFromExecution(defectId: string, executionId: string): Promise<void> {
     await prisma.bugTestExecution.delete({
       where: {
-        bugId_executionId: { bugId, executionId },
+        bugId_executionId: { bugId: defectId, executionId },
       },
     })
   }
 
-  async getLinkedExecutions(bugId: string): Promise<string[]> {
+  async getLinkedExecutions(defectId: string): Promise<string[]> {
     const links = await prisma.bugTestExecution.findMany({
-      where: { bugId },
+      where: { bugId: defectId },
       select: { executionId: true },
     })
     return links.map((l) => l.executionId)

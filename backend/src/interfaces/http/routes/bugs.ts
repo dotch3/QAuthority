@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify"
 import { defectService } from "../../../services/DefectService.js"
 import { evidenceService } from "../../../services/EvidenceService.js"
+import { NotFoundError } from "../../../utils/errors.js"
 
 export async function bugRoutes(app: FastifyInstance) {
   app.get(
@@ -104,7 +105,7 @@ export async function bugRoutes(app: FastifyInstance) {
       const { id } = request.params as { id: string }
       const bug = await defectService.findById(id)
       if (!bug) {
-        throw new Error("Bug not found")
+        throw new NotFoundError("Defect not found")
       }
       return bug
     }
