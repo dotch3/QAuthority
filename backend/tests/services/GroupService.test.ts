@@ -12,12 +12,11 @@ const mockPrisma = {
   userGroupMember: {
     create: vi.fn(),
     delete: vi.fn(),
-    findMany: vi.fn(),
+    findUnique: vi.fn(),
   },
   modulePermission: {
     upsert: vi.fn(),
     deleteMany: vi.fn(),
-    create: vi.fn(),
   },
 }
 
@@ -48,12 +47,29 @@ describe('GroupService', () => {
   })
 
   it('addMember throws if already member', async () => {
-    mockPrisma.userGroupMember.findMany.mockResolvedValue([{ userId: 'u1', groupId: 'g1' }])
+    mockPrisma.userGroupMember.findUnique.mockResolvedValue({ userId: 'u1', groupId: 'g1' })
     await expect(service.addMember('g1', 'u1')).rejects.toThrow('User is already a member')
   })
 
   it('deleteGroup throws if isSystem=true', async () => {
     mockPrisma.userGroup.findUnique.mockResolvedValue({ id: '1', isSystem: true })
     await expect(service.deleteGroup('1')).rejects.toThrow('Cannot delete a system group')
+  })
+
+  it('setPermissions upserts all provided permissions', async () => {
+    mockPrisma.userGroup.findUnique.mockResolvedValue({ id: 'g1', isSystem: false, permissions: [], members: [] })
+    mockPrisma.modulePermission.upsert.mockResolvedValue({})
+
+    const permissions = [
+      { module: 'TEST_PLANS' as any, canCreate: true, canRead: true, canUpdate: true, canDelete: false, canExport: false },
+    ]
+    await service.setPermissions('g1', permissions)
+
+    expect(mockPrisma.modulePermission.upsert).toHaveBeenCalledTimes(1)
+    expect(mockPrisma.modulePermission.upsert).toHaveBeenCalledWith({
+      where: { groupId_module: { groupId: 'g1', module: 'TEST_PLANS' } },
+      update: { canCreate: true, canRead: true, canUpdate: true, canDelete: false, canExport: false },
+      create: { groupId: 'g1', module: 'TEST_PLANS', canCreate: true, canRead: true, canUpdate: true, canDelete: false, canExport: false },
+    })
   })
 })

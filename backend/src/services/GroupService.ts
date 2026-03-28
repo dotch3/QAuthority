@@ -59,10 +59,10 @@ export class GroupService {
   }
 
   async addMember(groupId: string, userId: string) {
-    const existing = await this.prisma.userGroupMember.findMany({
-      where: { groupId, userId },
+    const existing = await this.prisma.userGroupMember.findUnique({
+      where: { userId_groupId: { userId, groupId } },
     })
-    if (existing.length > 0) throw new Error('User is already a member')
+    if (existing) throw new Error('User is already a member')
     return this.prisma.userGroupMember.create({ data: { groupId, userId } })
   }
 
@@ -74,11 +74,12 @@ export class GroupService {
 
   async setPermissions(groupId: string, permissions: SetPermissionsInput[]) {
     await this.getGroup(groupId)
-    await this.prisma.modulePermission.deleteMany({ where: { groupId } })
     return Promise.all(
       permissions.map(p =>
-        this.prisma.modulePermission.create({
-          data: { groupId, ...p },
+        this.prisma.modulePermission.upsert({
+          where: { groupId_module: { groupId, module: p.module } },
+          update: { canCreate: p.canCreate, canRead: p.canRead, canUpdate: p.canUpdate, canDelete: p.canDelete, canExport: p.canExport },
+          create: { groupId, ...p },
         })
       )
     )
