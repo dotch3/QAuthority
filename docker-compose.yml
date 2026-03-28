@@ -6,14 +6,14 @@
 #   Cloud DB:    docker compose up
 
 services:
-  testtool-postgres:
+  qauthority-postgres:
     image: postgres:16-alpine
     profiles: [local-db]
-    container_name: testtool-postgres
+    container_name: qauthority-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: testtool
+      POSTGRES_DB: qauthority
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -24,9 +24,9 @@ services:
       timeout: 5s
       retries: 5
 
-  testtool-redis:
+  qauthority-redis:
     image: redis:7-alpine
-    container_name: testtool-redis
+    container_name: qauthority-redis
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
@@ -38,11 +38,11 @@ services:
       timeout: 5s
       retries: 5
 
-  testtool-backend:
+  qauthority-api:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: testtool-backend
+    container_name: qauthority-api
     env_file: .env
     ports:
       - "3001:3001"
@@ -53,16 +53,16 @@ services:
       - internal
       - public
     depends_on:
-      testtool-redis:
+      qauthority-redis:
         condition: service_healthy
-      testtool-postgres:
+      qauthority-postgres:
         condition: service_healthy
 
-  testtool-worker:
+  qauthority-worker:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: testtool-worker
+    container_name: qauthority-worker
     command: ["node", "dist/worker.js"]
     env_file: .env
     volumes:
@@ -71,37 +71,37 @@ services:
     networks:
       - internal
     depends_on:
-      testtool-redis:
+      qauthority-redis:
         condition: service_healthy
-      testtool-postgres:
+      qauthority-postgres:
         condition: service_healthy
 
-  testtool-frontend:
+  qauthority-ui:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: testtool-frontend
+    container_name: qauthority-ui
     env_file: .env
     ports:
       - "3000:3000"
     networks:
       - public
     depends_on:
-      - testtool-backend
+      - qauthority-api
 
-  testtool-backup:
+  qauthority-backup:
     image: postgres:16-alpine
     profiles: [local-db]
-    container_name: testtool-backup
+    container_name: qauthority-backup
     env_file: .env
     volumes:
       - backups_data:/data/backups
     networks:
       - internal
     entrypoint: >
-      sh -c "apk add --no-cache busybox && echo '0 2 * * * pg_dump $$DATABASE_URL -F c -f /data/backups/testtool_$$(date +\\%Y\\%m\\%d_\\%H\\%M\\%S).dump' | crontab - && crond -f -l 8"
+      sh -c "apk add --no-cache busybox && echo '0 2 * * * pg_dump $$DATABASE_URL -F c -f /data/backups/qauthority_$$(date +\\%Y\\%m\\%d_\\%H\\%M\\%S).dump' | crontab - && crond -f -l 8"
     depends_on:
-      testtool-postgres:
+      qauthority-postgres:
         condition: service_healthy
 
 volumes:
@@ -113,6 +113,6 @@ volumes:
 
 networks:
   internal:
-    name: testtool-internal
+    name: qauthority-internal
   public:
-    name: testtool-public
+    name: qauthority-public

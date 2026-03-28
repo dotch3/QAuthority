@@ -8,9 +8,9 @@ export default fp(async (app: FastifyInstance) => {
   await app.register(swagger, {
     openapi: {
       info: {
-        title: `${APP_CONFIG.name} API`,
-        description: 'Test management system REST API',
-        version: APP_CONFIG.version,
+        title: 'QAuthority API',
+        version: '1.0.0',
+        description: `QAuthority is an Enterprise QA Governance Platform providing multi-project test management, executive KPI dashboards, DORA metrics, OKR tracking, and AI-powered test automation. Designed for QA Managers governing multiple teams at scale. Authentication: Bearer JWT (obtain via /auth/login or OAuth2)`,
       },
       servers: [{ url: '/api/v1' }],
       components: {

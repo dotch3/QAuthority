@@ -1,4 +1,4 @@
-# TestTool - Design Specification
+# QAuthority - Design Specification
 
 **Version:** 1.0
 **Date:** 2026-03-23
@@ -8,7 +8,7 @@
 
 ## Overview
 
-TestTool is a comprehensive test case management platform designed for development and QA teams. It provides centralized management of test plans, test suites, test cases, execution tracking, and bug reporting.
+QAuthority is a comprehensive test case management platform designed for development and QA teams. It provides centralized management of test plans, test suites, test cases, execution tracking, and bug reporting.
 
 ---
 

@@ -105,7 +105,7 @@ export interface Config {
 }
 
 export const APP_CONFIG = {
-  name: "TestTool",
+  name: "QAuthority",
   version: "1.0.0",
-  description: "Test Case Management System",
+  description: "Enterprise QA Governance Platform",
 } as const
