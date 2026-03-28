@@ -13,20 +13,41 @@ export async function setupWizardRoutes(app: FastifyInstance) {
   })
 
   // POST /api/v1/setup/run — no auth required
-  app.post('/setup/run', async (req, reply) => {
-    const body = req.body as {
+  app.post<{
+    Body: {
       orgName: string
       adminEmail: string
       adminPassword: string
       adminName: string
-      language: string
-      locale: string
+      language?: string
+      locale?: string
     }
-    try {
-      const result = await service.runSetup(body)
-      return reply.code(201).send(result)
-    } catch (err: any) {
-      return reply.code(400).send({ error: err.message })
-    }
-  })
+  }>(
+    '/setup/run',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['orgName', 'adminEmail', 'adminPassword', 'adminName'],
+          properties: {
+            orgName: { type: 'string' },
+            adminEmail: { type: 'string', format: 'email' },
+            adminPassword: { type: 'string', minLength: 1 },
+            adminName: { type: 'string' },
+            language: { type: 'string' },
+            locale: { type: 'string' },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      try {
+        const result = await service.runSetup(req.body)
+        return reply.code(201).send(result)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return reply.code(400).send({ error: message })
+      }
+    },
+  )
 }

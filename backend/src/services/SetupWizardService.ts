@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { seedGroups } from '../utils/seedGroups.js'
+import { validatePassword } from '../utils/passwordPolicy.js'
 
 interface SetupInput {
   orgName: string
@@ -35,38 +36,46 @@ export class SetupWizardService {
       throw new Error('Setup has already been completed')
     }
 
-    // 1. Get or create admin role
-    let adminRole = await this.prisma.role.findFirst({ where: { name: 'admin' } })
-    if (!adminRole) {
-      adminRole = await this.prisma.role.create({
-        data: { name: 'admin', label: 'Administrator', isSystem: true },
-      })
+    const passwordValidation = validatePassword(input.adminPassword)
+    if (!passwordValidation.valid) {
+      throw new Error(passwordValidation.errors.join('. '))
     }
 
-    // 2. Create admin user with hashed password
-    const passwordHash = await bcrypt.hash(input.adminPassword, 12)
-    const adminUser = await this.prisma.user.create({
-      data: {
-        email: input.adminEmail,
-        name: input.adminName,
-        passwordHash,
-        roleId: adminRole.id,
-      },
-    })
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Get or create admin role
+      let adminRole = await tx.role.findFirst({ where: { name: 'admin' } })
+      if (!adminRole) {
+        adminRole = await tx.role.create({
+          data: { name: 'admin', label: 'Administrator', isSystem: true },
+        })
+      }
 
-    // 3. Seed default groups
-    await seedGroups(this.prisma)
+      // 2. Create admin user with hashed password
+      const passwordHash = await bcrypt.hash(input.adminPassword, 12)
+      const adminUser = await tx.user.create({
+        data: {
+          email: input.adminEmail,
+          name: input.adminName,
+          passwordHash,
+          roleId: adminRole.id,
+        },
+      })
 
-    // 4. Add admin to System Admin group
-    const systemAdminGroup = await this.prisma.userGroup.findFirst({
-      where: { name: 'System Admin' },
-    })
-    if (systemAdminGroup) {
-      await this.prisma.userGroupMember.create({
+      // 3. Seed default groups
+      await seedGroups(tx)
+
+      // 4. Add admin to System Admin group
+      const systemAdminGroup = await tx.userGroup.findFirst({
+        where: { name: 'System Admin' },
+      })
+      if (!systemAdminGroup) {
+        throw new Error("'System Admin' group not found after seeding — seeding may have failed")
+      }
+      await tx.userGroupMember.create({
         data: { userId: adminUser.id, groupId: systemAdminGroup.id },
       })
-    }
 
-    return { ok: true, adminUserId: adminUser.id }
+      return { ok: true, adminUserId: adminUser.id }
+    })
   }
 }

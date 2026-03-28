@@ -1,5 +1,6 @@
 // Mirrors prisma/seed/groups.ts but lives inside src/ to satisfy TypeScript's rootDir constraint.
 import { PrismaClient, ModuleType } from '@prisma/client'
+import { logger } from '../logger.js'
 
 const ALL_MODULES = Object.values(ModuleType)
 
@@ -9,7 +10,9 @@ const CRUD_NO_DELETE = { canCreate: true, canRead: true, canUpdate: true, canDel
 const READ_ONLY = { canCreate: false, canRead: true, canUpdate: false, canDelete: false, canExport: false }
 const NO_ACCESS = { canCreate: false, canRead: false, canUpdate: false, canDelete: false, canExport: false }
 
-export async function seedGroups(prisma: PrismaClient) {
+type TransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>
+
+export async function seedGroups(prisma: TransactionClient) {
   const groups = [
     {
       name: 'System Admin',
@@ -99,5 +102,5 @@ export async function seedGroups(prisma: PrismaClient) {
     }
   }
 
-  console.log('✓ Default groups seeded')
+  logger.info('Default groups seeded')
 }
