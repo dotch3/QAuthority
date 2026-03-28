@@ -25,7 +25,7 @@ export const useSidebarState = create<SidebarState>()(
       setMobileOpen: (open) => set({ isMobileOpen: open }),
     }),
     {
-      name: "testtool-sidebar",
+      name: "qauthority-sidebar",
     }
   )
 )

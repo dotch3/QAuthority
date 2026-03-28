@@ -49,7 +49,7 @@
     "testSuites": "Suítes de Teste",
     "testCases": "Casos de Teste",
     "executions": "Execuções",
-    "bugs": "Bugs",
+    "bugs": "Defects",
     "notifications": "Notificações",
     "reports": "Relatórios",
     "reportsDashboard": "Painel de Relatórios",

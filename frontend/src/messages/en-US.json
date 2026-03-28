@@ -49,7 +49,7 @@
     "testSuites": "Test Suites",
     "testCases": "Test Cases",
     "executions": "Executions",
-    "bugs": "Bugs",
+    "bugs": "Defects",
     "notifications": "Notifications",
     "reports": "Reports",
     "reportsDashboard": "Reports Dashboard",

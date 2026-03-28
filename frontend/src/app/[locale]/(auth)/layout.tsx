@@ -19,7 +19,13 @@ export default function AuthLayout({
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center p-4">
-        {children}
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold">{APP_CONFIG.name}</h1>
+            <p className="text-muted-foreground">{APP_CONFIG.description}</p>
+          </div>
+          {children}
+        </div>
       </main>
     </div>
   )
