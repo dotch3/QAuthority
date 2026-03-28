@@ -25,7 +25,7 @@ export function SetupWizard({ health }: { health: { database: string } }) {
 
   const submit = async () => {
     try {
-      await api.post('/setup/run', form)
+      await api.post('/setup/run', form, { skipAuth: true })
       toast.success('QAuthority setup complete!')
       router.push('/login')
     } catch (e: unknown) {
@@ -58,7 +58,7 @@ export function SetupWizard({ health }: { health: { database: string } }) {
           <div>
             <Label>Language</Label>
             <select
-              className="w-full border rounded p-2 bg-background text-sm"
+              className="w-full border border-input rounded-md p-2 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               value={form.language}
               onChange={e => update('language', e.target.value)}
             >
@@ -71,7 +71,10 @@ export function SetupWizard({ health }: { health: { database: string } }) {
             <Label>Organization Name</Label>
             <Input value={form.orgName} onChange={e => update('orgName', e.target.value)} />
           </div>
-          <Button onClick={() => setStep(2)}>Continue</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setStep(0)}>Back</Button>
+            <Button onClick={() => setStep(2)} disabled={!form.orgName.trim()}>Continue</Button>
+          </div>
         </div>
       )}
 
@@ -89,9 +92,12 @@ export function SetupWizard({ health }: { health: { database: string } }) {
             <Label>Admin Password</Label>
             <Input type="password" value={form.adminPassword} onChange={e => update('adminPassword', e.target.value)} />
           </div>
-          <Button onClick={() => setStep(3)} disabled={!form.adminEmail || !form.adminPassword || !form.adminName}>
-            Continue
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
+            <Button onClick={() => setStep(3)} disabled={!form.adminEmail || !form.adminPassword || !form.adminName}>
+              Continue
+            </Button>
+          </div>
         </div>
       )}
 
@@ -101,7 +107,10 @@ export function SetupWizard({ health }: { health: { database: string } }) {
             <p><strong>Organization:</strong> {form.orgName || '(not set)'}</p>
             <p><strong>Admin:</strong> {form.adminName} ({form.adminEmail})</p>
           </div>
-          <Button onClick={submit} className="w-full">Complete Setup</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
+            <Button onClick={submit} className="flex-1">Complete Setup</Button>
+          </div>
         </div>
       )}
     </div>
