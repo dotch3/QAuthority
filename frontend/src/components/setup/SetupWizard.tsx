@@ -27,7 +27,7 @@ export function SetupWizard({ health }: { health: { database: string } }) {
   const submit = async () => {
     setIsSubmitting(true)
     try {
-      await api.post('/setup/run', form, { skipAuth: true })
+      await api.post('/setup/run', form)
       toast.success('QAuthority setup complete!')
       router.push('/login')
     } catch (e: unknown) {

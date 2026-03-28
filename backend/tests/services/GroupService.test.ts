@@ -5,6 +5,7 @@ const mockPrisma = {
   userGroup: {
     findMany: vi.fn(),
     findUnique: vi.fn(),
+    findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -41,7 +42,7 @@ describe('GroupService', () => {
   })
 
   it('createGroup rejects duplicate name', async () => {
-    mockPrisma.userGroup.findUnique.mockResolvedValue({ id: '1', name: 'Existing' })
+    mockPrisma.userGroup.findFirst.mockResolvedValue({ id: '1', name: 'Existing' })
     await expect(service.createGroup({ name: 'Existing', description: null }))
       .rejects.toThrow('Group name already exists')
   })
