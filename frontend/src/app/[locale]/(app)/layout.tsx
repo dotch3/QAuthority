@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/layout/AppShell"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
+import { PermissionsProvider } from "@/contexts/PermissionsContext"
 
 export default async function AppLayout({
   children,
@@ -8,7 +9,9 @@ export default async function AppLayout({
 }) {
   return (
     <ProtectedRoute redirectTo="/login">
-      <AppShell>{children}</AppShell>
+      <PermissionsProvider>
+        <AppShell>{children}</AppShell>
+      </PermissionsProvider>
     </ProtectedRoute>
   )
 }

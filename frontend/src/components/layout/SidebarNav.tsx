@@ -5,26 +5,41 @@ import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import type { NavSection } from "@/lib/navigation"
+import type { NavSection, ModuleId } from "@/lib/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { AboutDialog } from "./AboutDialog"
+import { useProject } from "@/contexts/ProjectContext"
 
 interface SidebarNavProps {
   sections: NavSection[]
   isCollapsed: boolean
+  activeModule: ModuleId
 }
 
-export function SidebarNav({ sections, isCollapsed }: SidebarNavProps) {
+export function SidebarNav({ sections, isCollapsed, activeModule }: SidebarNavProps) {
   const t = useTranslations()
   const pathname = usePathname()
   const [showAbout, setShowAbout] = useState(false)
+  const { isOrgView } = useProject()
+
+  const activeSections = sections.filter(s => s.moduleId === activeModule)
+
+  if (activeModule === "test-management" && isOrgView) {
+    return (
+      <div className="p-4">
+        <p className="text-xs text-muted-foreground">
+          Select a project to access Test Command.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <>
       <ScrollArea className="flex-1 py-4">
         <nav className="space-y-5 px-2">
-          {sections.map((section, idx) => (
+          {activeSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
               {section.titleKey && !isCollapsed && (
                 <h4 className="mb-3 px-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -76,7 +91,7 @@ export function SidebarNav({ sections, isCollapsed }: SidebarNavProps) {
                   </Link>
                 )
               })}
-              {idx < sections.length - 1 && !isCollapsed && (
+              {idx < activeSections.length - 1 && !isCollapsed && (
                 <Separator className="my-4 opacity-50" />
               )}
             </div>

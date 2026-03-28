@@ -289,3 +289,15 @@ export const groupsApi = {
   setPermissions: (groupId: string, permissions: any[]) =>
     api.put(`/groups/${groupId}/permissions`, { permissions }),
 }
+
+export interface PermissionEntry {
+  canCreate: boolean
+  canRead: boolean
+  canUpdate: boolean
+  canDelete: boolean
+  canExport: boolean
+}
+
+export const permissionsApi = {
+  getMyMatrix: () => api.get<Record<string, PermissionEntry>>('/permissions/my-matrix'),
+}

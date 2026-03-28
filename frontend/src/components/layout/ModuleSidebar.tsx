@@ -1,23 +1,53 @@
 "use client"
 
-import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShieldCheck, Menu, ClipboardList, BarChart3, FileText, Cpu, Users, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useSidebarState } from "@/hooks/useSidebarState"
 import { SidebarNav } from "./SidebarNav"
-import { ProjectSelector } from "./ProjectSelector"
-import { sidebarNavigation } from "@/lib/navigation"
+import { sidebarNavigation, MODULE_LABELS, type ModuleId } from "@/lib/navigation"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useState } from "react"
-import { Menu } from "lucide-react"
 import { APP_CONFIG } from "@/lib/config"
 import Link from "next/link"
 import { useLocale } from "next-intl"
 import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
+import { usePermissions } from "@/contexts/PermissionsContext"
 
-export function Sidebar() {
-  const { isCollapsed, toggleCollapse } = useSidebarState()
+const MODULE_ICONS: Record<ModuleId, React.ComponentType<{ className?: string }>> = {
+  "test-management": ClipboardList,
+  governance: BarChart3,
+  reports: FileText,
+  integrations: Cpu,
+  "users-groups": Users,
+  admin: Settings,
+}
+
+const MODULE_PERMISSIONS: Record<ModuleId, string> = {
+  "test-management": "TEST_PLANS",
+  governance: "QA_GOVERNANCE",
+  reports: "REPORTING",
+  integrations: "INTEGRATIONS",
+  "users-groups": "USERS_GROUPS",
+  admin: "ADMIN",
+}
+
+const ALL_MODULES: ModuleId[] = [
+  "test-management",
+  "governance",
+  "reports",
+  "integrations",
+  "users-groups",
+  "admin",
+]
+
+export function ModuleSidebar() {
+  const { isCollapsed, toggleCollapse, activeModule, setActiveModule } = useSidebarState()
   const [mobileOpen, setLocalMobileOpen] = useState(false)
   const locale = useLocale()
+  const { can } = usePermissions()
+
+  const visibleModules = ALL_MODULES.filter(m => can(MODULE_PERMISSIONS[m], "read"))
 
   return (
     <>
@@ -29,6 +59,7 @@ export function Sidebar() {
         <SidebarContent
           isCollapsed={isCollapsed}
           onToggleCollapse={toggleCollapse}
+          activeModule={activeModule}
         />
       </aside>
 
@@ -51,11 +82,27 @@ export function Sidebar() {
               <span className="text-xs text-muted-foreground">v{APP_CONFIG.version}</span>
             </Link>
           </div>
-          <div className="p-2">
-            <ProjectSelector />
+          <div className="flex border-b overflow-x-auto">
+            {visibleModules.map(moduleId => {
+              const Icon = MODULE_ICONS[moduleId]
+              return (
+                <button
+                  key={moduleId}
+                  onClick={() => setActiveModule(moduleId)}
+                  className={cn(
+                    "flex flex-col items-center px-3 py-2 text-xs gap-1 border-b-2 shrink-0",
+                    activeModule === moduleId
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground"
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="hidden sm:block">{MODULE_LABELS[moduleId].split(' ')[0]}</span>
+                </button>
+              )
+            })}
           </div>
-          <Separator />
-          <SidebarNav sections={sidebarNavigation} isCollapsed={false} />
+          <SidebarNav sections={sidebarNavigation} isCollapsed={false} activeModule={activeModule} />
         </SheetContent>
       </Sheet>
     </>
@@ -65,9 +112,11 @@ export function Sidebar() {
 function SidebarContent({
   isCollapsed,
   onToggleCollapse,
+  activeModule,
 }: {
   isCollapsed: boolean
   onToggleCollapse: () => void
+  activeModule: ModuleId
 }) {
   const locale = useLocale()
 
@@ -94,24 +143,9 @@ function SidebarContent({
         </Link>
       </div>
 
-      {!isCollapsed && (
-        <div className="p-2 border-b">
-          <h4 className="mb-2 px-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            Projects
-          </h4>
-          <ProjectSelector />
-        </div>
-      )}
-
-      {isCollapsed && (
-        <div className="p-2 flex justify-center border-b">
-          <ProjectSelector />
-        </div>
-      )}
-
       <Separator />
 
-      <SidebarNav sections={sidebarNavigation} isCollapsed={isCollapsed} />
+      <SidebarNav sections={sidebarNavigation} isCollapsed={isCollapsed} activeModule={activeModule} />
 
       <div className={`border-t p-2 mt-auto ${isCollapsed ? "flex justify-center" : ""}`}>
         <Button

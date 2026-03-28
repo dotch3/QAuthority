@@ -11,7 +11,7 @@
 | Plan | Title | Status | Progress |
 |------|-------|--------|----------|
 | Plan 0 | Groups & Permissions + Setup Wizard | ✅ Complete | 10 / 10 tasks |
-| Plan 1 | Navigation / UI Restructure | ⏳ Not Started | 0 / 8 tasks |
+| Plan 1 | Navigation / UI Restructure | ✅ Complete | 11 / 11 tasks |
 | Plan 2 | KPIs / OKRs / Metrics Dashboard | ⏳ Not Started | 0 / 9 tasks |
 | Plan 3 | Advanced Reporting | ⏳ Not Started | 0 / 7 tasks |
 | Plan 4 | CI/CD & External Integrations | ⏳ Not Started | 0 / 7 tasks |
@@ -35,6 +35,24 @@
 | P0-T8 | Frontend — Setup Wizard | ✅ Complete |
 | P0-T9 | Auth Middleware — Module Permission Guard | ✅ Complete |
 | P0-TF | Integration Test & Final Commit | ✅ Complete |
+
+---
+
+## Plan 1 — Navigation / UI Restructure
+
+| Task | Description | Status |
+|------|-------------|--------|
+| P1-T1 | Update navigation.ts with moduleId structure | ✅ Complete |
+| P1-T2 | Update APP_CONFIG brand name | ✅ Complete |
+| P1-T3 | Add isOrgView to ProjectContext | ✅ Complete |
+| P1-T4 | Add "All Projects" to ProjectSelector | ✅ Complete |
+| P1-T5 | Move ProjectSelector into Header | ✅ Complete |
+| P1-T6 | Create PermissionsContext + backend /permissions/my-matrix route | ✅ Complete |
+| P1-T7 | Create ModuleRail + extend useSidebarState | ✅ Complete |
+| P1-T8 | Rename Sidebar → ModuleSidebar, add module filtering | ✅ Complete |
+| P1-T9 | Update AppShell to include ModuleRail | ✅ Complete |
+| P1-T10 | Update mobile drawer in ModuleSidebar | ✅ Complete |
+| P1-T11 | Add i18n keys for new nav items | ✅ Complete |
 
 ---
 
