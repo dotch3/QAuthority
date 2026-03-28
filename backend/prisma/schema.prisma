@@ -46,8 +46,8 @@ model User {
   executionStepResults ExecutionStepResult[]
   etChartersCreated ETCharter[]      @relation("ETCharterCreator")
   etChartersTested ETCharter[]      @relation("ETCharterTester")
-  bugsReported     Bug[]             @relation("BugReportedBy")
-  bugsAssigned     Bug[]             @relation("BugAssignedTo")
+  defectsReported  Defect[]          @relation("BugReportedBy")
+  defectsAssigned  Defect[]          @relation("BugAssignedTo")
   attachments      Attachment[]
   customFieldDefs  CustomFieldDef[]
   integrations     Integration[]
@@ -177,10 +177,10 @@ model EnumValue {
   testCasePriority  TestCase[]      @relation("TestCasePriority")
   testCaseType      TestCase[]      @relation("TestCaseType")
   executions        TestExecution[] @relation("TestExecutionStatus")
-  bugStatuses       Bug[]           @relation("BugStatus")
-  bugPriorities   Bug[]            @relation("BugPriority")
-  bugSeverities   Bug[]            @relation("BugSeverity")
-  bugSources      Bug[]            @relation("BugSource")
+  bugStatuses       Defect[]        @relation("BugStatus")
+  bugPriorities   Defect[]         @relation("BugPriority")
+  bugSeverities   Defect[]         @relation("BugSeverity")
+  bugSources      Defect[]         @relation("BugSource")
   integrationTypes Integration[]
   customFieldTypes CustomFieldDef[]
 
@@ -202,7 +202,7 @@ model Project {
 
   members         ProjectMember[]
   testPlans       TestPlan[]
-  bugs            Bug[]
+  defects         Defect[]
   integrations    Integration[]
   customFieldDefs CustomFieldDef[]
   attachments     Attachment[]
@@ -304,7 +304,7 @@ model ETCharter {
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
-  linkedBugs               BugETCharter[]
+  linkedDefects            BugETCharter[]
   linkedTestCases          ETCharterTestCase[]
   linkedHeuristics        ETCharterHeuristic[]
 
@@ -355,7 +355,7 @@ model ETCharterHeuristic {
 model BugETCharter {
   id          String    @id @default(uuid())
   bugId       String
-  bug         Bug      @relation(fields: [bugId], references: [id], onDelete: Cascade)
+  bug         Defect   @relation(fields: [bugId], references: [id], onDelete: Cascade)
   etCharterId String
   etCharter   ETCharter @relation(fields: [etCharterId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
@@ -445,7 +445,7 @@ model TestExecution {
   platform    String?
   createdAt   DateTime  @default(now())
 
-  bugs        BugTestExecution[]
+  defects     BugTestExecution[]
   tags        TestExecutionTag[]
   stepResults ExecutionStepResult[]
 
@@ -467,9 +467,9 @@ model ExecutionStepResult {
   @@map("execution_step_results")
 }
 
-// ─── Bugs ──────────────────────────────────────────────────────────────────
+// ─── Defects ───────────────────────────────────────────────────────────────
 
-model Bug {
+model Defect {
   id          String    @id @default(uuid())
   projectId   String
   project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -498,12 +498,12 @@ model Bug {
   etCharters BugETCharter[]
   tags       BugTag[]
 
-  @@map("bugs")
+  @@map("defects")
 }
 
 model BugTestExecution {
   bugId       String
-  bug         Bug           @relation(fields: [bugId], references: [id], onDelete: Cascade)
+  bug         Defect        @relation(fields: [bugId], references: [id], onDelete: Cascade)
   executionId String
   execution   TestExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
 
@@ -522,7 +522,7 @@ model Tag {
   createdAt DateTime  @default(now())
 
   testCases       TestCaseTag[]
-  bugs            BugTag[]
+  defects         BugTag[]
   testExecutions  TestExecutionTag[]
 
   @@unique([name, projectId])
@@ -541,9 +541,9 @@ model TestCaseTag {
 
 model BugTag {
   bugId  String
-  bug    Bug   @relation(fields: [bugId], references: [id], onDelete: Cascade)
+  bug    Defect @relation(fields: [bugId], references: [id], onDelete: Cascade)
   tagId  String
-  tag    Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([bugId, tagId])
   @@map("bug_tags")

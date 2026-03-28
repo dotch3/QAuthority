@@ -1,5 +1,5 @@
 import { prisma } from "../infrastructure/database/prisma.js"
-import type { Bug } from "@prisma/client"
+import type { Defect } from "@prisma/client"
 import { NotFoundError, BadRequestError } from "../utils/errors.js"
 
 export interface CreateBugData {
@@ -26,9 +26,9 @@ export interface UpdateBugData {
   assignedToId?: string | null
 }
 
-export class BugService {
-  async create(data: CreateBugData): Promise<Bug> {
-    return prisma.bug.create({
+export class DefectService {
+  async create(data: CreateBugData): Promise<Defect> {
+    return prisma.defect.create({
       data: {
         projectId: data.projectId,
         title: data.title,
@@ -45,8 +45,8 @@ export class BugService {
     })
   }
 
-  async findById(id: string): Promise<Bug | null> {
-    return prisma.bug.findUnique({
+  async findById(id: string): Promise<Defect | null> {
+    return prisma.defect.findUnique({
       where: { id },
       include: {
         reportedBy: {
@@ -59,8 +59,8 @@ export class BugService {
     })
   }
 
-  async findByProject(projectId: string): Promise<Bug[]> {
-    return prisma.bug.findMany({
+  async findByProject(projectId: string): Promise<Defect[]> {
+    return prisma.defect.findMany({
       where: { projectId },
       include: {
         status: true,
@@ -77,8 +77,8 @@ export class BugService {
     })
   }
 
-  async findByExecution(executionId: string): Promise<Bug[]> {
-    return prisma.bug.findMany({
+  async findByExecution(executionId: string): Promise<Defect[]> {
+    return prisma.defect.findMany({
       where: {
         executions: {
           some: { executionId },
@@ -92,13 +92,13 @@ export class BugService {
     })
   }
 
-  async update(id: string, data: UpdateBugData): Promise<Bug> {
+  async update(id: string, data: UpdateBugData): Promise<Defect> {
     const existing = await this.findById(id)
     if (!existing) {
       throw new NotFoundError("Bug not found")
     }
 
-    return prisma.bug.update({
+    return prisma.defect.update({
       where: { id },
       data: {
         title: data.title,
@@ -118,7 +118,7 @@ export class BugService {
       throw new NotFoundError("Bug not found")
     }
 
-    await prisma.bug.delete({
+    await prisma.defect.delete({
       where: { id },
     })
   }
@@ -156,18 +156,18 @@ export class BugService {
     bySeverity: Record<string, number>
   }> {
     const [total, byStatus, byPriority, bySeverity] = await Promise.all([
-      prisma.bug.count({ where: { projectId } }),
-      prisma.bug.groupBy({
+      prisma.defect.count({ where: { projectId } }),
+      prisma.defect.groupBy({
         by: ["statusId"],
         where: { projectId },
         _count: true,
       }),
-      prisma.bug.groupBy({
+      prisma.defect.groupBy({
         by: ["priorityId"],
         where: { projectId },
         _count: true,
       }),
-      prisma.bug.groupBy({
+      prisma.defect.groupBy({
         by: ["severityId"],
         where: { projectId },
         _count: true,
@@ -208,4 +208,4 @@ export class BugService {
   }
 }
 
-export const bugService = new BugService()
+export const bugService = new DefectService()

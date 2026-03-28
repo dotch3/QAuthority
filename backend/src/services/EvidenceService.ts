@@ -42,7 +42,7 @@ export class EvidenceService {
     
     if (!finalProjectId) {
       if (entityType === "bug") {
-        const bug = await prisma.bug.findUnique({ where: { id: entityId }, select: { projectId: true } })
+        const bug = await prisma.defect.findUnique({ where: { id: entityId }, select: { projectId: true } })
         finalProjectId = bug?.projectId
       } else if (entityType === "test_case") {
         const tc = await prisma.testCase.findUnique({ where: { id: entityId }, include: { suite: { include: { testPlan: true } } } })

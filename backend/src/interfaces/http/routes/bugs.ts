@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify"
-import { bugService } from "../../../services/BugService.js"
+import { bugService } from "../../../services/DefectService.js"
 import { evidenceService } from "../../../services/EvidenceService.js"
 
 export async function bugRoutes(app: FastifyInstance) {

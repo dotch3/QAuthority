@@ -325,7 +325,7 @@ export async function projectRoutes(app: FastifyInstance) {
           prisma.testSuite.count({ where: { testPlan: { projectId } } }),
           prisma.testCase.count({ where: { suite: { testPlan: { projectId } } } }),
           prisma.testExecution.count({ where: { testPlan: { projectId } } }),
-          prisma.bug.groupBy({
+          prisma.defect.groupBy({
             by: ["statusId"],
             where: { projectId },
             _count: { id: true },
