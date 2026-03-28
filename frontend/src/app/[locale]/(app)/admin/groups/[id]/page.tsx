@@ -16,7 +16,7 @@ export default function GroupDetailPage() {
     groupsApi.get(id).then((r: any) => {
       const data = r.data ?? r
       setGroup(data)
-      setPendingPerms(r.data.permissions.map((p: any) => ({
+      setPendingPerms(data.permissions.map((p: any) => ({
         module: p.module,
         canRead: p.canRead,
         canCreate: p.canCreate,
