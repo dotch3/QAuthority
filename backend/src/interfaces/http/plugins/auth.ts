@@ -29,6 +29,7 @@ export default fp(async (app: FastifyInstance) => {
       '/api/v1/auth/login',
       '/api/v1/auth/register',
       '/api/v1/auth/refresh',
+      '/api/v1/auth/logout',
       '/api/v1/auth/forgot-password',
       '/api/v1/auth/reset-password',
       '/api/v1/auth/oauth/github',
@@ -39,6 +40,7 @@ export default fp(async (app: FastifyInstance) => {
     if (publicAuthRoutes.some(route => request.url.startsWith(route))) return
     
     if (request.url.includes('/evidence/') && request.url.endsWith('/file')) return
+    if (request.url.startsWith('/api/v1/setup/')) return
 
     const authHeader = request.headers.authorization
     if (!authHeader?.startsWith('Bearer ')) {
