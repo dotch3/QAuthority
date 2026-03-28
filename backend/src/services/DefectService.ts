@@ -208,4 +208,4 @@ export class DefectService {
   }
 }
 
-export const bugService = new DefectService()
+export const defectService = new DefectService()

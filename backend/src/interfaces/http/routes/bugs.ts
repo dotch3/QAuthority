@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify"
-import { bugService } from "../../../services/DefectService.js"
+import { defectService } from "../../../services/DefectService.js"
 import { evidenceService } from "../../../services/EvidenceService.js"
 
 export async function bugRoutes(app: FastifyInstance) {
@@ -19,7 +19,7 @@ export async function bugRoutes(app: FastifyInstance) {
     },
     async (request) => {
       const { projectId } = request.params as { projectId: string }
-      return bugService.findByProject(projectId)
+      return defectService.findByProject(projectId)
     }
   )
 
@@ -68,7 +68,7 @@ export async function bugRoutes(app: FastifyInstance) {
         externalUrl?: string
       }
 
-      const bug = await bugService.create({
+      const bug = await defectService.create({
         projectId,
         title: body.title,
         description: body.description,
@@ -102,7 +102,7 @@ export async function bugRoutes(app: FastifyInstance) {
     },
     async (request) => {
       const { id } = request.params as { id: string }
-      const bug = await bugService.findById(id)
+      const bug = await defectService.findById(id)
       if (!bug) {
         throw new Error("Bug not found")
       }
@@ -148,7 +148,7 @@ export async function bugRoutes(app: FastifyInstance) {
         assignedToId?: string | null
       }
 
-      return bugService.update(id, body)
+      return defectService.update(id, body)
     }
   )
 
@@ -168,7 +168,7 @@ export async function bugRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      await bugService.delete(id)
+      await defectService.delete(id)
       return reply.status(204).send()
     }
   )
@@ -190,7 +190,7 @@ export async function bugRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       const { id, executionId } = request.params as { id: string; executionId: string }
-      await bugService.linkToExecution(id, executionId)
+      await defectService.linkToExecution(id, executionId)
       return reply.status(204).send()
     }
   )
@@ -212,7 +212,7 @@ export async function bugRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       const { id, executionId } = request.params as { id: string; executionId: string }
-      await bugService.unlinkFromExecution(id, executionId)
+      await defectService.unlinkFromExecution(id, executionId)
       return reply.status(204).send()
     }
   )
@@ -233,7 +233,7 @@ export async function bugRoutes(app: FastifyInstance) {
     },
     async (request) => {
       const { projectId } = request.params as { projectId: string }
-      return bugService.getStats(projectId)
+      return defectService.getStats(projectId)
     }
   )
 
