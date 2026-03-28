@@ -17,15 +17,15 @@ export const config = {
   OAUTH_GOOGLE_CLIENT_SECRET: process.env.OAUTH_GOOGLE_CLIENT_SECRET || '',
   OAUTH_MICROSOFT_CLIENT_ID: process.env.OAUTH_MICROSOFT_CLIENT_ID || '',
   OAUTH_MICROSOFT_CLIENT_SECRET: process.env.OAUTH_MICROSOFT_CLIENT_SECRET || '',
-  ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@testtools.com',
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@qauthority.com',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'Changeme123!',
   STORAGE_PROVIDER: process.env.STORAGE_PROVIDER || 'local',
   STORAGE_PATH: process.env.STORAGE_PATH || './data/uploads',
   SUPABASE_URL: process.env.SUPABASE_URL || '',
   SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY || '',
-  SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET || 'testtool-uploads',
+  SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET || 'qauthority-uploads',
   S3_ENDPOINT: process.env.S3_ENDPOINT || '',
-  S3_BUCKET: process.env.S3_BUCKET || 'testtool-uploads',
+  S3_BUCKET: process.env.S3_BUCKET || 'qauthority-uploads',
   S3_REGION: process.env.S3_REGION || 'us-east-1',
   S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID || '',
   S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || '',
@@ -49,7 +49,7 @@ export const config = {
   SMTP_SECURE: process.env.SMTP_SECURE === 'true',
   SMTP_USER: process.env.SMTP_USER || '',
   SMTP_PASS: process.env.SMTP_PASS || '',
-  SMTP_FROM: process.env.SMTP_FROM || 'TestTool <no-reply@testtools.com>',
+  SMTP_FROM: process.env.SMTP_FROM || 'QAuthority <no-reply@qauthority.com>',
 }
 
 export interface Config {
