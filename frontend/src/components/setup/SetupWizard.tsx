@@ -7,11 +7,12 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 
-const STEPS = ['System Check', 'Language & Locale', 'Admin Account', 'Review & Finish']
+const STEPS = ['System Check', 'Language & Organization', 'Admin Account', 'Review & Finish']
 
 export function SetupWizard({ health }: { health: { database: string } }) {
   const router = useRouter()
   const [step, setStep] = useState(0)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState({
     orgName: '',
     adminEmail: '',
@@ -24,12 +25,14 @@ export function SetupWizard({ health }: { health: { database: string } }) {
   const update = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
 
   const submit = async () => {
+    setIsSubmitting(true)
     try {
       await api.post('/setup/run', form, { skipAuth: true })
       toast.success('QAuthority setup complete!')
       router.push('/login')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Setup failed')
+      setIsSubmitting(false)
     }
   }
 
@@ -109,7 +112,7 @@ export function SetupWizard({ health }: { health: { database: string } }) {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
-            <Button onClick={submit} className="flex-1">Complete Setup</Button>
+            <Button onClick={submit} disabled={isSubmitting} className="flex-1">Complete Setup</Button>
           </div>
         </div>
       )}

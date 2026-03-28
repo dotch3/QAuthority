@@ -2,7 +2,7 @@ import { SetupWizard } from '@/components/setup/SetupWizard'
 
 async function getSetupStatus() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/setup/status`, { cache: 'no-store' })
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/setup/status`, { cache: 'no-store' })
     if (!res.ok) return { complete: false, health: { database: 'error', migrations: 'unknown' } }
     return res.json()
   } catch {
