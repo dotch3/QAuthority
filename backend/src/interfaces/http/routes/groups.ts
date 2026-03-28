@@ -1,14 +1,17 @@
 import type { FastifyInstance } from 'fastify'
 import { GroupService } from '../../../services/GroupService.js'
 import { prisma } from '../../../infrastructure/database/prisma.js'
+import { UnauthorizedError, ForbiddenError } from '../../../utils/errors.js'
 
 const groupService = new GroupService(prisma)
+
+const ADMIN_ROLE_ID = 'role-admin'
 
 export async function groupsRoutes(app: FastifyInstance) {
   app.addHook('onRequest', async (request) => {
     const user = request.user
     if (!user) {
-      throw new Error('Unauthorized')
+      throw new UnauthorizedError('Unauthorized')
     }
   })
 
@@ -28,6 +31,10 @@ export async function groupsRoutes(app: FastifyInstance) {
       },
     },
     async (request) => {
+      const user = request.user
+      if (user!.roleId !== ADMIN_ROLE_ID) {
+        throw new ForbiddenError('Admin access required')
+      }
       const { projectId } = request.query as { projectId?: string }
       return groupService.listGroups(projectId)
     }
@@ -85,8 +92,8 @@ export async function groupsRoutes(app: FastifyInstance) {
     }
   )
 
-  // PUT /api/v1/groups/:id
-  app.put<{ Params: { id: string } }>(
+  // PATCH /api/v1/groups/:id
+  app.patch<{ Params: { id: string } }>(
     '/groups/:id',
     {
       schema: {
@@ -161,8 +168,8 @@ export async function groupsRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       const { userId } = request.body as { userId: string }
-      await groupService.addMember(request.params.id, userId)
-      return reply.status(201).send({ ok: true })
+      const member = await groupService.addMember(request.params.id, userId)
+      return reply.status(201).send(member)
     }
   )
 
@@ -207,7 +214,18 @@ export async function groupsRoutes(app: FastifyInstance) {
           properties: {
             permissions: {
               type: 'array',
-              items: { type: 'object', additionalProperties: true },
+              items: {
+                type: 'object',
+                required: ['module', 'canCreate', 'canRead', 'canUpdate', 'canDelete', 'canExport'],
+                properties: {
+                  module: { type: 'string' },
+                  canCreate: { type: 'boolean' },
+                  canRead: { type: 'boolean' },
+                  canUpdate: { type: 'boolean' },
+                  canDelete: { type: 'boolean' },
+                  canExport: { type: 'boolean' },
+                },
+              },
             },
           },
         },
