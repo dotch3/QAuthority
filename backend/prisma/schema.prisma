@@ -56,6 +56,7 @@ model User {
   passwordResets   PasswordResetToken[]
   suiteAssignees   TestSuiteAssignee[]
   caseAssignees    TestCaseAssignee[]
+  groupMemberships UserGroupMember[]
 
   @@map("users")
 }
@@ -206,6 +207,7 @@ model Project {
   customFieldDefs CustomFieldDef[]
   attachments     Attachment[]
   tags            Tag[]
+  userGroups      UserGroup[]
 
   @@map("projects")
 }
@@ -670,4 +672,60 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+// ─── Groups & Permissions ──────────────────────────────────────────────────
+
+enum ModuleType {
+  TEST_PLANS
+  TEST_SUITES
+  TEST_CASES
+  EXECUTIONS
+  BUGS
+  ET_CHARTERS
+  HEURISTICS
+  QA_GOVERNANCE
+  REPORTING
+  PROCESS_DESIGNER
+  AI_CODEGEN
+  INTEGRATIONS
+  USERS_GROUPS
+  ADMIN
+}
+
+model UserGroup {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  description String?
+  isSystem    Boolean            @default(false)
+  projectId   String?
+  project     Project?           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  members     UserGroupMember[]
+  permissions ModulePermission[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model UserGroupMember {
+  userId    String
+  groupId   String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@id([userId, groupId])
+}
+
+model ModulePermission {
+  id        String     @id @default(uuid())
+  groupId   String
+  group     UserGroup  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  module    ModuleType
+  canCreate Boolean    @default(false)
+  canRead   Boolean    @default(true)
+  canUpdate Boolean    @default(false)
+  canDelete Boolean    @default(false)
+  canExport Boolean    @default(false)
+
+  @@unique([groupId, module])
 }
