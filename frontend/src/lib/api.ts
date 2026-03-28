@@ -274,3 +274,18 @@ class ApiClient {
 }
 
 export const api = new ApiClient(API_BASE)
+
+export const groupsApi = {
+  list: () => api.get('/groups'),
+  get: (id: string) => api.get(`/groups/${id}`),
+  create: (data: { name: string; description?: string }) => api.post('/groups', data),
+  update: (id: string, data: { name?: string; description?: string }) =>
+    api.patch(`/groups/${id}`, data),
+  delete: (id: string) => api.delete(`/groups/${id}`),
+  addMember: (groupId: string, userId: string) =>
+    api.post(`/groups/${groupId}/members`, { userId }),
+  removeMember: (groupId: string, userId: string) =>
+    api.delete(`/groups/${groupId}/members/${userId}`),
+  setPermissions: (groupId: string, permissions: any[]) =>
+    api.put(`/groups/${groupId}/permissions`, { permissions }),
+}
