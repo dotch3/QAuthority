@@ -10,14 +10,14 @@
 
 | Plan | Title | Status | Progress |
 |------|-------|--------|----------|
-| Plan 0 | Groups & Permissions + Setup Wizard | 🔄 In Progress | 4 / 10 tasks |
+| Plan 0 | Groups & Permissions + Setup Wizard | ✅ Complete | 10 / 10 tasks |
 | Plan 1 | Navigation / UI Restructure | ⏳ Not Started | 0 / 8 tasks |
 | Plan 2 | KPIs / OKRs / Metrics Dashboard | ⏳ Not Started | 0 / 9 tasks |
 | Plan 3 | Advanced Reporting | ⏳ Not Started | 0 / 7 tasks |
 | Plan 4 | CI/CD & External Integrations | ⏳ Not Started | 0 / 7 tasks |
 | Plan 5 | Visual QA Process Designer | ⏳ Not Started | 0 / 7 tasks |
 | Plan 6 | AI Code Generation | ⏳ Not Started | 0 / 7 tasks |
-| Plan 7 | QAuthority Rebranding | 🔄 In Progress | 4 / 7 tasks |
+| Plan 7 | QAuthority Rebranding | 🔄 In Progress | 6 / 7 tasks |
 
 ---
 
@@ -31,10 +31,10 @@
 | P0-T4 | PermissionMatrixService (TDD) | ✅ Complete |
 | P0-T5 | Groups & Permissions Routes | ✅ Complete |
 | P0-T6 | SetupWizardService + Route | ✅ Complete |
-| P0-T7 | Frontend — Groups Admin Page | 🔄 In Progress |
-| P0-T8 | Frontend — Setup Wizard | ⏳ Pending |
-| P0-T9 | Auth Middleware — Module Permission Guard | ⏳ Pending |
-| P0-TF | Integration Test & Final Commit | ⏳ Pending |
+| P0-T7 | Frontend — Groups Admin Page | ✅ Complete |
+| P0-T8 | Frontend — Setup Wizard | ✅ Complete |
+| P0-T9 | Auth Middleware — Module Permission Guard | ✅ Complete |
+| P0-TF | Integration Test & Final Commit | ✅ Complete |
 
 ---
 
@@ -44,8 +44,8 @@
 |------|-------------|--------|-------|
 | P7-T1 | Rewrite README.md | ✅ Complete | |
 | P7-T2/T3/T4 | Rename docs + packages + Swagger | ✅ Complete | |
-| P7-T5 | DB Entity Renames — Bug → Defect | ⏳ Pending | ⚠️ After Plan 0 schema done |
-| P7-T6 | UI Copy Updates | 🔄 In Progress | |
+| P7-T5 | DB Entity Renames — Bug → Defect | 🔄 In Progress | Plan 0 complete — unblocked |
+| P7-T6 | UI Copy Updates | ✅ Complete | |
 | P7-T7 | Final Verification | ⏳ Pending | After T1-T6 |
 
 ---
