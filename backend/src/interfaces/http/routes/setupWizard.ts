@@ -15,10 +15,10 @@ export async function setupWizardRoutes(app: FastifyInstance) {
   // POST /api/v1/setup/run — no auth required
   app.post<{
     Body: {
-      orgName: string
       adminEmail: string
       adminPassword: string
       adminName: string
+      orgName?: string
       language?: string
       locale?: string
     }
@@ -28,11 +28,12 @@ export async function setupWizardRoutes(app: FastifyInstance) {
       schema: {
         body: {
           type: 'object',
-          required: ['orgName', 'adminEmail', 'adminPassword', 'adminName'],
+          additionalProperties: false,
+          required: ['adminEmail', 'adminPassword', 'adminName'],
           properties: {
             orgName: { type: 'string' },
             adminEmail: { type: 'string', format: 'email' },
-            adminPassword: { type: 'string', minLength: 1 },
+            adminPassword: { type: 'string' },
             adminName: { type: 'string' },
             language: { type: 'string' },
             locale: { type: 'string' },

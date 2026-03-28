@@ -4,12 +4,12 @@ import { seedGroups } from '../utils/seedGroups.js'
 import { validatePassword } from '../utils/passwordPolicy.js'
 
 interface SetupInput {
-  orgName: string
   adminEmail: string
   adminPassword: string
   adminName: string
-  language: string
-  locale: string
+  orgName?: string
+  language?: string
+  locale?: string
 }
 
 export class SetupWizardService {
@@ -32,16 +32,15 @@ export class SetupWizardService {
   }
 
   async runSetup(input: SetupInput) {
-    if (await this.isSetupComplete()) {
-      throw new Error('Setup has already been completed')
-    }
-
     const passwordValidation = validatePassword(input.adminPassword)
     if (!passwordValidation.valid) {
       throw new Error(passwordValidation.errors.join('. '))
     }
 
     return await this.prisma.$transaction(async (tx) => {
+      // Guard inside transaction to prevent race conditions
+      const adminCount = await tx.user.count({ where: { role: { name: 'admin' } } })
+      if (adminCount > 0) throw new Error('Setup has already been completed')
       // 1. Get or create admin role
       let adminRole = await tx.role.findFirst({ where: { name: 'admin' } })
       if (!adminRole) {
