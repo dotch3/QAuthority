@@ -1,11 +1,12 @@
 "use client"
 
-import { FolderKanban, ChevronDown, Check, Loader2 } from "lucide-react"
+import { FolderKanban, ChevronDown, Check, Loader2, Globe } from "lucide-react"
 import { useProject } from "@/contexts/ProjectContext"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
@@ -17,39 +18,26 @@ export function ProjectSelector() {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        <span>Loading projects...</span>
+        <span>Loading...</span>
       </div>
     )
   }
 
-  if (projects.length === 0) {
-    return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <FolderKanban className="h-4 w-4" />
-        <span>No projects</span>
-      </div>
-    )
-  }
-
-  if (projects.length === 1) {
-    return (
-      <div className="flex items-center gap-2 text-sm font-medium">
-        <FolderKanban className="h-4 w-4 text-muted-foreground" />
-        <span>{selectedProject?.name}</span>
-      </div>
-    )
-  }
+  const label = selectedProject?.name ?? "All Projects"
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center gap-2 h-9 px-2 text-sm font-medium"
+          className="flex items-center gap-2 h-9 px-2 text-sm font-medium max-w-48"
         >
-          <FolderKanban className="h-4 w-4 text-muted-foreground" />
-          <span>{selectedProject?.name || "Select project"}</span>
-          <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          {selectedProject
+            ? <FolderKanban className="h-4 w-4 text-muted-foreground shrink-0" />
+            : <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+          }
+          <span className="truncate">{label}</span>
+          {projects.length > 0 && <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
@@ -63,11 +51,20 @@ export function ProjectSelector() {
               <span>{project.name}</span>
               <span className="text-xs text-muted-foreground">{project.key}</span>
             </div>
-            {selectedProject?.id === project.id && (
-              <Check className="h-4 w-4" />
-            )}
+            {selectedProject?.id === project.id && <Check className="h-4 w-4" />}
           </DropdownMenuItem>
         ))}
+        {projects.length > 0 && <DropdownMenuSeparator />}
+        <DropdownMenuItem
+          onClick={() => setSelectedProject(null)}
+          className="flex items-center justify-between cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <span>All Projects</span>
+          </div>
+          {selectedProject === null && <Check className="h-4 w-4" />}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
