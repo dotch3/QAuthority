@@ -2,7 +2,6 @@ import fp from 'fastify-plugin'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import type { FastifyInstance } from 'fastify'
-import { APP_CONFIG } from '../../../config.js'
 
 export default fp(async (app: FastifyInstance) => {
   await app.register(swagger, {
