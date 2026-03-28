@@ -8,17 +8,28 @@ import { toast } from 'sonner'
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    groupsApi.list().then((r: any) => setGroups(r.data ?? r))
+    groupsApi.list().then((r: any) => {
+      setGroups(r.data ?? r)
+      setLoading(false)
+    }).catch(() => {
+      toast.error('Failed to load groups')
+      setLoading(false)
+    })
   }, [])
 
-  const handleDelete = async (id: string, isSystem: boolean) => {
-    if (isSystem) return toast.error('Cannot delete a system group')
-    await groupsApi.delete(id)
-    setGroups(prev => prev.filter(g => g.id !== id))
-    toast.success('Group deleted')
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this group?')) return
+    try {
+      await groupsApi.delete(id)
+      setGroups(prev => prev.filter(g => g.id !== id))
+      toast.success('Group deleted')
+    } catch {
+      toast.error('Failed to delete group')
+    }
   }
 
   return (
@@ -59,7 +70,7 @@ export default function GroupsPage() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDelete(group.id, group.isSystem)}
+                  onClick={() => handleDelete(group.id)}
                 >
                   Delete
                 </Button>
@@ -67,7 +78,12 @@ export default function GroupsPage() {
             </div>
           </div>
         ))}
-        {groups.length === 0 && (
+        {loading && (
+          <div className="text-center py-12 text-muted-foreground">
+            Loading...
+          </div>
+        )}
+        {!loading && groups.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             No groups found. Create one to get started.
           </div>

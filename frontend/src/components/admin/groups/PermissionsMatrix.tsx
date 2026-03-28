@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const MODULES = [
   { key: 'TEST_PLANS', label: 'Test Plans' },
@@ -41,6 +41,17 @@ export function PermissionsMatrix({ permissions, onChange, disabled }: Props) {
     }
     return initial
   })
+
+  useEffect(() => {
+    const initial: Record<string, Record<string, boolean>> = {}
+    for (const mod of MODULES) {
+      initial[mod.key] = {
+        canRead: false, canCreate: false, canUpdate: false, canDelete: false, canExport: false,
+        ...permissions[mod.key],
+      }
+    }
+    setMatrix(initial)
+  }, [permissions])
 
   const toggle = (module: string, action: string) => {
     const updated = {

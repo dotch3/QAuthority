@@ -16,20 +16,39 @@ export default function GroupDetailPage() {
     groupsApi.get(id).then((r: any) => {
       const data = r.data ?? r
       setGroup(data)
-      setPendingPerms(data.permissions ?? [])
+      setPendingPerms(r.data.permissions.map((p: any) => ({
+        module: p.module,
+        canRead: p.canRead,
+        canCreate: p.canCreate,
+        canUpdate: p.canUpdate,
+        canDelete: p.canDelete,
+        canExport: p.canExport,
+      })))
+    }).catch(() => {
+      toast.error('Failed to load group')
     })
   }, [id])
 
   const savePermissions = async () => {
-    await groupsApi.setPermissions(id, pendingPerms)
-    toast.success('Permissions saved')
+    try {
+      await groupsApi.setPermissions(id, pendingPerms)
+      toast.success('Permissions saved')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save permissions')
+    }
   }
 
   if (!group) return <div className="p-6 text-muted-foreground">Loading...</div>
 
   const permMap: Record<string, Record<string, boolean>> = {}
   for (const p of group.permissions ?? []) {
-    permMap[p.module] = p
+    permMap[p.module] = {
+      canRead: p.canRead,
+      canCreate: p.canCreate,
+      canUpdate: p.canUpdate,
+      canDelete: p.canDelete,
+      canExport: p.canExport,
+    }
   }
 
   return (
