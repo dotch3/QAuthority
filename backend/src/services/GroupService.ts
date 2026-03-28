@@ -42,8 +42,10 @@ export class GroupService {
   }
 
   async createGroup(input: CreateGroupInput) {
-    const existing = await this.prisma.userGroup.findUnique({ where: { name: input.name } })
-    if (existing) throw new BadRequestError('Group name already exists')
+    const existing = await this.prisma.userGroup.findFirst({
+      where: { name: input.name, projectId: input.projectId ?? null }
+    })
+    if (existing) throw new BadRequestError('Group name already exists in this project')
     return this.prisma.userGroup.create({ data: input })
   }
 
@@ -68,6 +70,10 @@ export class GroupService {
   }
 
   async removeMember(groupId: string, userId: string) {
+    const existing = await this.prisma.userGroupMember.findUnique({
+      where: { userId_groupId: { userId, groupId } },
+    })
+    if (!existing) throw new NotFoundError('Member not found in group')
     return this.prisma.userGroupMember.delete({
       where: { userId_groupId: { userId, groupId } },
     })
