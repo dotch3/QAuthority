@@ -2,6 +2,7 @@
 // Seeds the database with required system data:
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
+import { seedGroups } from './seed/groups'
 
 const prisma = new PrismaClient()
 
@@ -645,6 +646,8 @@ async function main() {
       })
     }
   }
+
+  await seedGroups(prisma)
 
   console.log('Seed completed successfully!')
   console.log(`Created ${projects.length} projects`)
