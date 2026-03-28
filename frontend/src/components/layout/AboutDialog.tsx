@@ -64,7 +64,7 @@ export function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
               {t("contribute")}
             </p>
             <a
-              href="https://github.com/dotch3/testtools"
+              href="https://github.com/dotch3/qauthority"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-sm text-primary hover:underline"

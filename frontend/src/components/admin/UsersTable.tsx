@@ -305,7 +305,7 @@ export function UsersTable() {
                 onChange={(e) =>
                   setCreateForm({ ...createForm, email: e.target.value })
                 }
-                placeholder="user@testtools.com"
+                placeholder="user@example.com"
               />
             </div>
             <div>
@@ -396,7 +396,7 @@ export function UsersTable() {
                   onChange={(e) =>
                     setSelectedUser({ ...selectedUser, email: e.target.value })
                   }
-                  placeholder="user@testtools.com"
+                  placeholder="user@example.com"
                 />
               </div>
               <div>
