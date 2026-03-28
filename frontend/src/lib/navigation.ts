@@ -142,8 +142,11 @@ export const ROUTE_TO_MODULE: Array<[string, ModuleId]> = [
   ["/reports", "reports"],
   ["/ai/", "integrations"],
   ["/integrations/", "integrations"],
+  ["/admin/integrations", "integrations"],
   ["/admin/users", "users-groups"],
   ["/admin/groups", "users-groups"],
   ["/admin/roles", "users-groups"],
+  ["/api-keys", "admin"],
+  ["/notifications", "admin"],
   ["/admin/", "admin"],
 ]
