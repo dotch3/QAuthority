@@ -8,11 +8,10 @@ const groupService = new GroupService(prisma)
 const ADMIN_ROLE_ID = 'role-admin'
 
 export async function groupsRoutes(app: FastifyInstance) {
-  app.addHook('onRequest', async (request) => {
-    const user = request.user
-    if (!user) {
-      throw new UnauthorizedError('Unauthorized')
-    }
+  app.addHook('onRequest', async (request, reply) => {
+    const user = (request as any).user
+    if (!user) throw new UnauthorizedError('Unauthorized')
+    if (user.roleId !== ADMIN_ROLE_ID) throw new ForbiddenError('Admin access required')
   })
 
   // GET /api/v1/groups
@@ -31,10 +30,6 @@ export async function groupsRoutes(app: FastifyInstance) {
       },
     },
     async (request) => {
-      const user = request.user
-      if (user!.roleId !== ADMIN_ROLE_ID) {
-        throw new ForbiddenError('Admin access required')
-      }
       const { projectId } = request.query as { projectId?: string }
       return groupService.listGroups(projectId)
     }
