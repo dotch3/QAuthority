@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronLeft, ChevronRight, TestTube2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useSidebarState } from "@/hooks/useSidebarState"
 import { SidebarNav } from "./SidebarNav"
@@ -46,7 +46,7 @@ export function Sidebar() {
         <SheetContent side="left" className="w-72 p-0 bg-sidebar-bg">
           <div className="flex h-14 items-center border-b px-4">
             <Link href={`/${locale}/dashboard`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <TestTube2 className="h-6 w-6 text-primary" />
+              <ShieldCheck className="h-6 w-6 text-primary" />
               <span className="font-semibold">{APP_CONFIG.name}</span>
               <span className="text-xs text-muted-foreground">v{APP_CONFIG.version}</span>
             </Link>
@@ -84,7 +84,7 @@ function SidebarContent({
             isCollapsed ? "" : "flex-1"
           }`}
         >
-          <TestTube2 className="h-6 w-6 text-primary" />
+          <ShieldCheck className="h-6 w-6 text-primary" />
           {!isCollapsed && (
             <div className="flex flex-col">
               <span className="font-semibold text-lg leading-tight">{APP_CONFIG.name}</span>
