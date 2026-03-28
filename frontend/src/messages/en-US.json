@@ -82,8 +82,8 @@
     "loadingUser": "Loading user..."
   },
   "about": {
-    "title": "About TestTool",
-    "description": "TestTool is a project developed by a QA professional for QA and Development teams.",
+    "title": "About QAuthority",
+    "description": "QAuthority is a project developed by a QA professional for QA and Development teams.",
     "purpose": "The goal is to provide a free, open-source alternative to commercial test management tools.",
     "featuresTitle": "Key Features",
     "features": "Features include test case management, test plan execution tracking, bug management, CI/CD integration, and comprehensive reports.",

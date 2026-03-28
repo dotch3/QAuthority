@@ -134,7 +134,7 @@ export default function ApiKeysPage() {
           <div>
             <h3 className="font-medium">API Documentation</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              View our API documentation to learn how to integrate with TestTool.
+              View our API documentation to learn how to integrate with QAuthority.
             </p>
             <Button variant="link" className="p-0 h-auto mt-1" disabled>
               Open API Docs →

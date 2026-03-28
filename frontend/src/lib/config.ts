@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  name: "TestTool",
+  name: "QAuthority",
   version: "1.0.0",
-  description: "Test Case Management System",
+  description: "Enterprise QA Command Center",
 } as const

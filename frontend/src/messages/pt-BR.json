@@ -82,8 +82,8 @@
     "loadingUser": "Carregando usuário..."
   },
   "about": {
-    "title": "Sobre o TestTool",
-    "description": "TestTool é um projeto desenvolvido por um profissional de QA para equipes de QA e Desenvolvimento.",
+    "title": "Sobre o QAuthority",
+    "description": "QAuthority é um projeto desenvolvido por um profissional de QA para equipes de QA e Desenvolvimento.",
     "purpose": "O objetivo é fornecer uma alternativa gratuita e de código aberto às ferramentas comerciais de gerenciamento de testes.",
     "featuresTitle": "Principais Recursos",
     "features": "Os recursos incluem gerenciamento de casos de teste, rastreamento de execução de planos de teste, gerenciamento de bugs, integração com CI/CD e relatórios abrangentes.",

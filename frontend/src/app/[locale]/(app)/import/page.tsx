@@ -232,7 +232,7 @@ export default function ImportPage() {
             <h3 className="font-medium">Import Guidelines</h3>
             <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
               <li>CSV files should have headers: title, description, priority, status</li>
-              <li>JSON files should follow the TestTool schema format</li>
+              <li>JSON files should follow the QAuthority schema format</li>
               <li>TestRail imports require XML format exported from TestRail</li>
               <li>Maximum file size: 10MB</li>
             </ul>
