@@ -13,7 +13,7 @@
 | Plan 0 | Groups & Permissions + Setup Wizard | ✅ Complete | 10 / 10 tasks |
 | Plan 1 | Navigation / UI Restructure | ✅ Complete | 11 / 11 tasks |
 | Plan 2 | KPIs / OKRs / Metrics Dashboard | ✅ Complete | 9 / 9 tasks |
-| Plan 3 | Advanced Reporting | ⏳ Not Started | 0 / 7 tasks |
+| Plan 3 | Advanced Reporting | ✅ Complete | 7 / 7 tasks |
 | Plan 4 | CI/CD & External Integrations | ✅ Complete | 7 / 7 tasks |
 | Plan 5 | Visual QA Process Designer | ⏳ Not Started | 0 / 7 tasks |
 | Plan 6 | AI Code Generation | ⏳ Not Started | 0 / 7 tasks |
@@ -69,6 +69,20 @@
 | P2-T7 | Executive Dashboard model | ✅ Complete |
 | P2-T8 | Frontend OKR/Metrics pages | ✅ Complete |
 | P2-T9 | Frontend Executive Dashboard | ✅ Complete |
+
+---
+
+## Plan 3 — Advanced Reporting
+
+| Task | Description | Status |
+|------|-------------|--------|
+| P3-T1 | Install report generation libraries | ✅ Complete |
+| P3-T2 | Prisma Schema — ReportTemplate and ReportJob models | ✅ Complete |
+| P3-T3 | ReportGeneratorService (TDD) | ✅ Complete |
+| P3-T4 | Report BullMQ Worker | ✅ Complete |
+| P3-T5 | Reports Routes | ✅ Complete |
+| P3-T6 | Prometheus + Grafana Export Endpoints | ✅ Complete |
+| P3-T7 | Frontend — Report Templates and History pages | ✅ Complete |
 
 ---
 
