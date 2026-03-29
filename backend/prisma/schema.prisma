@@ -1,5 +1,5 @@
 // backend/prisma/schema.prisma
-// Database schema for TestTool — 22 tables.
+// Database schema for QAuthority — 22 tables.
 // All enum-like fields use FK → EnumValue instead of Prisma enums,
 // so admins can customize values from the UI.
 
@@ -208,6 +208,9 @@ model Project {
   attachments     Attachment[]
   tags            Tag[]
   userGroups      UserGroup[]
+  okrs               OKR[]
+  metricSnapshots    MetricSnapshot[]
+  pbcSnapshots       PBCSnapshot[]
 
   @@map("projects")
 }
@@ -733,4 +736,112 @@ model ModulePermission {
 
   @@unique([groupId, module])
   @@map("module_permissions")
+}
+
+// ─── Governance / OKRs / Metrics ───────────────────────────────────────────
+
+enum OKRScope {
+  PROJECT
+  ORGANIZATION
+}
+
+enum OKRStatus {
+  DRAFT
+  ON_TRACK
+  AT_RISK
+  ACHIEVED
+  CANCELLED
+}
+
+enum AggregationStrategy {
+  SUM
+  AVG
+  MIN
+  MAX
+}
+
+enum MetricType {
+  DORA_DEPLOY_FREQUENCY
+  DORA_LEAD_TIME_HOURS
+  DORA_CHANGE_FAIL_RATE
+  DORA_MTTR_HOURS
+  QUALITY_REQUIREMENT_COVERAGE
+  QUALITY_DEFECT_DENSITY
+  QUALITY_ESCAPED_DEFECTS
+  EXECUTION_BURNDOWN
+  EXECUTION_PASS_RATE
+}
+
+model OKR {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  quarter     Int
+  year        Int
+  status      OKRStatus @default(DRAFT)
+  scope       OKRScope
+  projectId   String?
+  parentOkrId String?
+  isAdopted   Boolean   @default(false)
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent      OKR?      @relation("OKRAdoption", fields: [parentOkrId], references: [id])
+  adopted     OKR[]     @relation("OKRAdoption")
+  keyResults  KeyResult[]
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("okrs")
+}
+
+model KeyResult {
+  id                  String              @id @default(uuid())
+  okrId               String
+  title               String
+  targetValue         Float
+  currentValue        Float               @default(0)
+  unit                String
+  aggregationStrategy AggregationStrategy @default(AVG)
+  okr                 OKR                 @relation(fields: [okrId], references: [id], onDelete: Cascade)
+
+  @@map("key_results")
+}
+
+model MetricSnapshot {
+  id         String     @id @default(uuid())
+  projectId  String?
+  metricType MetricType
+  value      Float
+  recordedAt DateTime   @default(now())
+  metadata   Json?
+  project    Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, metricType, recordedAt])
+  @@map("metric_snapshots")
+}
+
+model PBCSnapshot {
+  id           String     @id @default(uuid())
+  projectId    String?
+  metricType   MetricType
+  dataPoints   Json
+  centralLine  Float
+  upperLimit   Float
+  lowerLimit   Float
+  signals      Json
+  calculatedAt DateTime   @default(now())
+  project      Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("pbc_snapshots")
+}
+
+model ExecutiveDashboard {
+  id          String   @id @default(uuid())
+  name        String
+  isDefault   Boolean  @default(false)
+  config      Json
+  createdById String
+  createdAt   DateTime @default(now())
+
+  @@map("executive_dashboards")
 }
