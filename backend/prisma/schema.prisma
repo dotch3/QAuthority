@@ -211,7 +211,8 @@ model Project {
   okrs               OKR[]
   metricSnapshots    MetricSnapshot[]
   pbcSnapshots       PBCSnapshot[]
-  ciBuilds        CIBuild[]
+  ciBuilds           CIBuild[]
+  reportTemplates    ReportTemplate[]
 
   @@map("projects")
 }
@@ -901,4 +902,66 @@ model ExternalIssue {
 
   @@unique([integrationId, externalId])
   @@map("external_issues")
+}
+
+// ─── Advanced Reporting ───────────────────────────────────────────────────────
+
+enum ReportType {
+  EXECUTION_SUMMARY
+  TEST_COVERAGE
+  DEFECT_ANALYSIS
+  KPI_SUMMARY
+  OKR_PROGRESS
+  EXECUTIVE_BRIEFING
+}
+
+enum ReportScope {
+  PROJECT
+  ORGANIZATION
+}
+
+enum ReportFormat {
+  PDF
+  DOCX
+  EXCEL
+  CSV
+  JSON
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+model ReportTemplate {
+  id          String       @id @default(uuid())
+  name        String
+  type        ReportType
+  scope       ReportScope
+  projectId   String?
+  config      Json         @default("{}")
+  createdById String
+  createdAt   DateTime     @default(now())
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  jobs        ReportJob[]
+
+  @@map("report_templates")
+}
+
+model ReportJob {
+  id          String         @id @default(uuid())
+  templateId String
+  status      JobStatus      @default(PENDING)
+  format      ReportFormat
+  filePath    String?
+  projectIds  Json?
+  errorMsg    String?
+  createdById String
+  createdAt   DateTime       @default(now())
+  completedAt DateTime?
+  template    ReportTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@map("report_jobs")
 }
