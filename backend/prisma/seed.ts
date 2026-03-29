@@ -12,100 +12,100 @@ async function main() {
     {
       name: 'test_plan_status', isSystem: true,
       values: [
-        { systemKey: 'draft',     value: 'draft',     label: 'Draft',     color: '#94a3b8', isDefault: true },
-        { systemKey: 'active',    value: 'active',    label: 'Active',    color: '#22c55e' },
+        { systemKey: 'draft', value: 'draft', label: 'Draft', color: '#94a3b8', isDefault: true },
+        { systemKey: 'active', value: 'active', label: 'Active', color: '#22c55e' },
         { systemKey: 'completed', value: 'completed', label: 'Completed', color: '#3b82f6' },
-        { systemKey: 'archived',  value: 'archived',  label: 'Archived',  color: '#6b7280' },
+        { systemKey: 'archived', value: 'archived', label: 'Archived', color: '#6b7280' },
       ],
     },
     {
       name: 'execution_status', isSystem: true,
       values: [
-        { systemKey: 'not_run',  value: 'not_run',  label: 'Not Run',  color: '#94a3b8', isDefault: true },
-        { systemKey: 'pass',     value: 'pass',     label: 'Pass',     color: '#22c55e' },
-        { systemKey: 'fail',     value: 'fail',     label: 'Fail',     color: '#ef4444' },
-        { systemKey: 'blocked',  value: 'blocked',  label: 'Blocked',  color: '#f97316' },
-        { systemKey: 'skipped',  value: 'skipped',  label: 'Skipped',  color: '#a855f7' },
+        { systemKey: 'not_run', value: 'not_run', label: 'Not Run', color: '#94a3b8', isDefault: true },
+        { systemKey: 'pass', value: 'pass', label: 'Pass', color: '#22c55e' },
+        { systemKey: 'fail', value: 'fail', label: 'Fail', color: '#ef4444' },
+        { systemKey: 'blocked', value: 'blocked', label: 'Blocked', color: '#f97316' },
+        { systemKey: 'skipped', value: 'skipped', label: 'Skipped', color: '#a855f7' },
       ],
     },
     {
       name: 'bug_status', isSystem: true,
       values: [
-        { systemKey: 'open',        value: 'open',        label: 'Open',        color: '#ef4444', isDefault: true },
+        { systemKey: 'open', value: 'open', label: 'Open', color: '#ef4444', isDefault: true },
         { systemKey: 'in_progress', value: 'in_progress', label: 'In Progress', color: '#f97316' },
-        { systemKey: 'resolved',    value: 'resolved',    label: 'Resolved',    color: '#22c55e' },
-        { systemKey: 'closed',      value: 'closed',      label: 'Closed',      color: '#6b7280' },
-        { systemKey: 'reopened',    value: 'reopened',    label: 'Reopened',    color: '#a855f7' },
+        { systemKey: 'resolved', value: 'resolved', label: 'Resolved', color: '#22c55e' },
+        { systemKey: 'closed', value: 'closed', label: 'Closed', color: '#6b7280' },
+        { systemKey: 'reopened', value: 'reopened', label: 'Reopened', color: '#a855f7' },
       ],
     },
     {
       name: 'bug_priority', isSystem: true,
       values: [
-        { systemKey: 'low',      value: 'low',      label: 'Low',      color: '#22c55e', isDefault: true },
-        { systemKey: 'medium',   value: 'medium',   label: 'Medium',   color: '#f59e0b' },
-        { systemKey: 'high',     value: 'high',     label: 'High',     color: '#f97316' },
+        { systemKey: 'low', value: 'low', label: 'Low', color: '#22c55e', isDefault: true },
+        { systemKey: 'medium', value: 'medium', label: 'Medium', color: '#f59e0b' },
+        { systemKey: 'high', value: 'high', label: 'High', color: '#f97316' },
         { systemKey: 'critical', value: 'critical', label: 'Critical', color: '#ef4444' },
       ],
     },
     {
       name: 'bug_severity', isSystem: true,
       values: [
-        { systemKey: 'trivial',  value: 'trivial',  label: 'Trivial',  color: '#94a3b8', isDefault: true },
-        { systemKey: 'minor',    value: 'minor',    label: 'Minor',    color: '#22c55e' },
-        { systemKey: 'major',    value: 'major',    label: 'Major',    color: '#f97316' },
+        { systemKey: 'trivial', value: 'trivial', label: 'Trivial', color: '#94a3b8', isDefault: true },
+        { systemKey: 'minor', value: 'minor', label: 'Minor', color: '#22c55e' },
+        { systemKey: 'major', value: 'major', label: 'Major', color: '#f97316' },
         { systemKey: 'critical', value: 'critical', label: 'Critical', color: '#ef4444' },
-        { systemKey: 'blocker',  value: 'blocker',  label: 'Blocker',  color: '#7c3aed' },
+        { systemKey: 'blocker', value: 'blocker', label: 'Blocker', color: '#7c3aed' },
       ],
     },
     {
       name: 'test_priority', isSystem: true,
       values: [
-        { systemKey: 'low',      value: 'low',      label: 'Low',      color: '#22c55e', isDefault: true },
-        { systemKey: 'medium',   value: 'medium',   label: 'Medium',   color: '#f59e0b' },
-        { systemKey: 'high',     value: 'high',     label: 'High',     color: '#f97316' },
+        { systemKey: 'low', value: 'low', label: 'Low', color: '#22c55e', isDefault: true },
+        { systemKey: 'medium', value: 'medium', label: 'Medium', color: '#f59e0b' },
+        { systemKey: 'high', value: 'high', label: 'High', color: '#f97316' },
         { systemKey: 'critical', value: 'critical', label: 'Critical', color: '#ef4444' },
       ],
     },
     {
       name: 'test_type', isSystem: true,
       values: [
-        { systemKey: 'manual',       value: 'manual',       label: 'Manual',       color: '#3b82f6', isDefault: true },
-        { systemKey: 'automated',    value: 'automated',    label: 'Automated',    color: '#22c55e' },
-        { systemKey: 'exploratory',  value: 'exploratory',  label: 'Exploratory',  color: '#a855f7' },
-        { systemKey: 'regression',   value: 'regression',   label: 'Regression',   color: '#f97316' },
+        { systemKey: 'manual', value: 'manual', label: 'Manual', color: '#3b82f6', isDefault: true },
+        { systemKey: 'automated', value: 'automated', label: 'Automated', color: '#22c55e' },
+        { systemKey: 'exploratory', value: 'exploratory', label: 'Exploratory', color: '#a855f7' },
+        { systemKey: 'regression', value: 'regression', label: 'Regression', color: '#f97316' },
       ],
     },
     {
       name: 'bug_source', isSystem: true,
       values: [
         { systemKey: 'internal', value: 'internal', label: 'Internal', color: '#6b7280', isDefault: true },
-        { systemKey: 'jira',     value: 'jira',     label: 'Jira',     color: '#0052cc' },
-        { systemKey: 'github',   value: 'github',   label: 'GitHub',   color: '#24292e' },
-        { systemKey: 'gitlab',   value: 'gitlab',   label: 'GitLab',   color: '#fc6d26' },
-        { systemKey: 'linear',   value: 'linear',   label: 'Linear',   color: '#5e6ad2' },
+        { systemKey: 'jira', value: 'jira', label: 'Jira', color: '#0052cc' },
+        { systemKey: 'github', value: 'github', label: 'GitHub', color: '#24292e' },
+        { systemKey: 'gitlab', value: 'gitlab', label: 'GitLab', color: '#fc6d26' },
+        { systemKey: 'linear', value: 'linear', label: 'Linear', color: '#5e6ad2' },
       ],
     },
     {
       name: 'field_type', isSystem: true,
       values: [
-        { systemKey: 'text',         value: 'text',         label: 'Text',         color: '#6b7280', isDefault: true },
-        { systemKey: 'number',       value: 'number',       label: 'Number',       color: '#3b82f6' },
-        { systemKey: 'date',         value: 'date',         label: 'Date',         color: '#22c55e' },
-        { systemKey: 'select',       value: 'select',       label: 'Select',       color: '#a855f7' },
+        { systemKey: 'text', value: 'text', label: 'Text', color: '#6b7280', isDefault: true },
+        { systemKey: 'number', value: 'number', label: 'Number', color: '#3b82f6' },
+        { systemKey: 'date', value: 'date', label: 'Date', color: '#22c55e' },
+        { systemKey: 'select', value: 'select', label: 'Select', color: '#a855f7' },
         { systemKey: 'multi_select', value: 'multi_select', label: 'Multi Select', color: '#f97316' },
-        { systemKey: 'user',         value: 'user',         label: 'User',         color: '#ec4899' },
-        { systemKey: 'boolean',      value: 'boolean',      label: 'Boolean',      color: '#f59e0b' },
-        { systemKey: 'url',          value: 'url',          label: 'URL',          color: '#06b6d4' },
+        { systemKey: 'user', value: 'user', label: 'User', color: '#ec4899' },
+        { systemKey: 'boolean', value: 'boolean', label: 'Boolean', color: '#f59e0b' },
+        { systemKey: 'url', value: 'url', label: 'URL', color: '#06b6d4' },
       ],
     },
     {
       name: 'integration_type', isSystem: true,
       values: [
-        { systemKey: 'jira',           value: 'jira',           label: 'Jira',            color: '#0052cc' },
-        { systemKey: 'github',         value: 'github',         label: 'GitHub',          color: '#24292e' },
-        { systemKey: 'gitlab',         value: 'gitlab',         label: 'GitLab',          color: '#fc6d26' },
-        { systemKey: 'jenkins',        value: 'jenkins',        label: 'Jenkins',         color: '#d33833' },
-        { systemKey: 'github_actions', value: 'github_actions', label: 'GitHub Actions',  color: '#2088ff' },
+        { systemKey: 'jira', value: 'jira', label: 'Jira', color: '#0052cc' },
+        { systemKey: 'github', value: 'github', label: 'GitHub', color: '#24292e' },
+        { systemKey: 'gitlab', value: 'gitlab', label: 'GitLab', color: '#fc6d26' },
+        { systemKey: 'jenkins', value: 'jenkins', label: 'Jenkins', color: '#d33833' },
+        { systemKey: 'github_actions', value: 'github_actions', label: 'GitHub Actions', color: '#2088ff' },
       ],
     },
   ]
@@ -138,8 +138,8 @@ async function main() {
 
   // ── Roles ─────────────────────────────────────────────────────────────────
   const roles = [
-    { id: 'role-admin',  name: 'admin',  label: 'Admin',  color: '#ef4444', isSystem: true },
-    { id: 'role-lead',   name: 'lead',   label: 'Lead',   color: '#f97316', isSystem: true },
+    { id: 'role-admin', name: 'admin', label: 'Admin', color: '#ef4444', isSystem: true },
+    { id: 'role-lead', name: 'lead', label: 'Lead', color: '#f97316', isSystem: true },
     { id: 'role-tester', name: 'tester', label: 'Tester', color: '#3b82f6', isSystem: true },
     { id: 'role-viewer', name: 'viewer', label: 'Viewer', color: '#6b7280', isSystem: true },
   ]
@@ -154,10 +154,10 @@ async function main() {
 
   // ── Permissions ───────────────────────────────────────────────────────────
   const resources = ['project', 'test_plan', 'test_suite', 'test_case', 'execution',
-                     'bug', 'user', 'report', 'integration', 'custom_field', 'enum',
-                     'role', 'attachment']
+    'bug', 'user', 'report', 'integration', 'custom_field', 'enum',
+    'role', 'attachment']
   const actions = ['create', 'read', 'update', 'delete', 'execute', 'export', 'import',
-                   'manage_members', 'manage_settings']
+    'manage_members', 'manage_settings']
 
   const permMatrix: Array<{ resource: string; action: string; label: string }> = []
   for (const resource of resources) {
@@ -183,7 +183,7 @@ async function main() {
   const leadRole = await prisma.role.findUniqueOrThrow({ where: { name: 'lead' } })
   const testerRole = await prisma.role.findUniqueOrThrow({ where: { name: 'tester' } })
   const allPerms = await prisma.permission.findMany()
-  
+
   for (const perm of allPerms) {
     await prisma.rolePermission.upsert({
       where: { roleId_permissionId: { roleId: adminRole.id, permissionId: perm.id } },
@@ -203,8 +203,8 @@ async function main() {
   }
 
   // Tester gets read, create, execute
-  const testerPerms = allPerms.filter(p => 
-    ['read', 'create', 'execute', 'export'].includes(p.action) && 
+  const testerPerms = allPerms.filter(p =>
+    ['read', 'create', 'execute', 'export'].includes(p.action) &&
     !['role', 'user', 'integration', 'custom_field', 'enum'].includes(p.resource)
   )
   for (const perm of testerPerms) {
@@ -216,7 +216,7 @@ async function main() {
   }
 
   // ── Users ─────────────────────────────────────────────────────────────────
-  const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@testtools.com'
+  const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@qauthority.com'
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'Changeme123!'
   const passwordHash = await bcrypt.hash(adminPassword, 12)
 
@@ -235,9 +235,9 @@ async function main() {
 
   // Create additional test users
   const testUsers = [
-    { email: 'lead@testtools.com', name: 'Test Lead', roleId: leadRole.id },
-    { email: 'tester@testtools.com', name: 'QA Tester', roleId: testerRole.id },
-    { email: 'viewer@testtools.com', name: 'Viewer User', roleId: testerRole.id },
+    { email: 'lead@qauthority.com', name: 'Test Lead', roleId: leadRole.id },
+    { email: 'tester@qauthority.com', name: 'QA Tester', roleId: testerRole.id },
+    { email: 'viewer@qauthority.com', name: 'Viewer User', roleId: testerRole.id },
   ]
 
   const createdUsers: typeof admin[] = [admin]
@@ -382,11 +382,11 @@ async function main() {
     { id: 'plan-webauth', name: 'Authentication Tests', description: 'Login, logout, registration and password recovery flows', projectId: 'proj-webapp', statusId: statusActive.id },
     { id: 'plan-webui', name: 'UI Regression Suite', description: 'Critical UI flows smoke test', projectId: 'proj-webapp', statusId: statusActive.id },
     { id: 'plan-webpay', name: 'Payment Flow Tests', description: 'Payment processing and checkout scenarios', projectId: 'proj-webapp', statusId: statusDraft.id },
-    
+
     // Mobile Plans
     { id: 'plan-mobileios', name: 'iOS Tests', description: 'iOS-specific functionality tests', projectId: 'proj-mobile', statusId: statusActive.id },
     { id: 'plan-mobileandroid', name: 'Android Tests', description: 'Android-specific functionality tests', projectId: 'proj-mobile', statusId: statusActive.id },
-    
+
     // API Plans
     { id: 'plan-apiv1', name: 'API v1 Regression', description: 'Regression tests for API v1 endpoints', projectId: 'proj-api', statusId: statusActive.id },
     { id: 'plan-apiv2', name: 'API v2 Beta', description: 'New endpoints and breaking changes in v2', projectId: 'proj-api', statusId: statusDraft.id },
@@ -413,20 +413,20 @@ async function main() {
     { id: 'suite-webauth-login', name: 'Login Tests', description: 'Login form validation and authentication', testPlanId: 'plan-webauth' },
     { id: 'suite-webauth-pass', name: 'Password Management', description: 'Password reset and change flows', testPlanId: 'plan-webauth' },
     { id: 'suite-webauth-sess', name: 'Session Management', description: 'Session timeout and concurrent login handling', testPlanId: 'plan-webauth' },
-    
+
     // UI Regression Suites
     { id: 'suite-webui-nav', name: 'Navigation', description: 'Main navigation and routing tests', testPlanId: 'plan-webui' },
     { id: 'suite-webui-forms', name: 'Forms', description: 'Form validation and submission tests', testPlanId: 'plan-webui' },
     { id: 'suite-webui-dash', name: 'Dashboard', description: 'Dashboard widgets and data display', testPlanId: 'plan-webui' },
-    
+
     // Payment Suites
     { id: 'suite-webpay-checkout', name: 'Checkout Flow', description: 'Complete checkout process tests', testPlanId: 'plan-webpay' },
     { id: 'suite-webpay-cards', name: 'Card Payments', description: 'Credit card validation and processing', testPlanId: 'plan-webpay' },
-    
+
     // Mobile Suites
     { id: 'suite-mobileios-nav', name: 'iOS Navigation', description: 'iOS-specific navigation patterns', testPlanId: 'plan-mobileios' },
     { id: 'suite-mobileios-perf', name: 'Performance', description: 'iOS app performance benchmarks', testPlanId: 'plan-mobileios' },
-    
+
     // API Suites
     { id: 'suite-apiv1-users', name: 'Users Endpoint', description: 'User CRUD operations', testPlanId: 'plan-apiv1' },
     { id: 'suite-apiv1-proj', name: 'Projects Endpoint', description: 'Project management API', testPlanId: 'plan-apiv1' },
@@ -448,7 +448,7 @@ async function main() {
     })
 
     // Add tester as suite assignee
-    const testerUser = createdUsers.find(u => u.email === 'tester@testtools.com')
+    const testerUser = createdUsers.find(u => u.email === 'tester@qauthority.com')
     if (testerUser) {
       await prisma.testSuiteAssignee.upsert({
         where: { suiteId_userId: { suiteId: suite.id, userId: testerUser.id } },
@@ -463,7 +463,7 @@ async function main() {
   const priorityMedium = await prisma.enumValue.findUniqueOrThrow({ where: { id: 'seed-test_priority-medium' } })
   const priorityLow = await prisma.enumValue.findUniqueOrThrow({ where: { id: 'seed-test_priority-low' } })
   const priorityCritical = await prisma.enumValue.findUniqueOrThrow({ where: { id: 'seed-test_priority-critical' } })
-  
+
   const typeManual = await prisma.enumValue.findUniqueOrThrow({ where: { id: 'seed-test_type-manual' } })
   const typeAutomated = await prisma.enumValue.findUniqueOrThrow({ where: { id: 'seed-test_type-automated' } })
 
@@ -474,18 +474,18 @@ async function main() {
     { id: 'tc-login-003', title: 'Verify login fails with non-existent user', suiteId: 'suite-webauth-login', priorityId: priorityHigh.id, typeId: typeManual.id },
     { id: 'tc-login-004', title: 'Verify "Remember me" checkbox persists session', suiteId: 'suite-webauth-login', priorityId: priorityMedium.id, typeId: typeManual.id },
     { id: 'tc-login-005', title: 'Verify login with SSO provider (Google)', suiteId: 'suite-webauth-login', priorityId: priorityHigh.id, typeId: typeManual.id },
-    
+
     // Password Management
     { id: 'tc-pass-001', title: 'Verify password reset flow with valid email', suiteId: 'suite-webauth-pass', priorityId: priorityHigh.id, typeId: typeManual.id },
     { id: 'tc-pass-002', title: 'Verify password reset with non-registered email', suiteId: 'suite-webauth-pass', priorityId: priorityMedium.id, typeId: typeManual.id },
     { id: 'tc-pass-003', title: 'Verify password change requires current password', suiteId: 'suite-webauth-pass', priorityId: priorityHigh.id, typeId: typeManual.id },
     { id: 'tc-pass-004', title: 'Verify new password meets complexity requirements', suiteId: 'suite-webauth-pass', priorityId: priorityMedium.id, typeId: typeManual.id },
-    
+
     // Navigation
     { id: 'tc-nav-001', title: 'Verify sidebar navigation collapses on mobile', suiteId: 'suite-webui-nav', priorityId: priorityMedium.id, typeId: typeManual.id },
     { id: 'tc-nav-002', title: 'Verify breadcrumb navigation is accurate', suiteId: 'suite-webui-nav', priorityId: priorityLow.id, typeId: typeManual.id },
     { id: 'tc-nav-003', title: 'Verify browser back button works correctly', suiteId: 'suite-webui-nav', priorityId: priorityMedium.id, typeId: typeManual.id },
-    
+
     // API Tests
     { id: 'tc-api-users-001', title: 'GET /users returns paginated list', suiteId: 'suite-apiv1-users', priorityId: priorityHigh.id, typeId: typeAutomated.id },
     { id: 'tc-api-users-002', title: 'POST /users creates new user', suiteId: 'suite-apiv1-users', priorityId: priorityHigh.id, typeId: typeAutomated.id },
@@ -517,7 +517,7 @@ async function main() {
     }
 
     // Add some test cases as assigned to tester
-    const testerUser = createdUsers.find(u => u.email === 'tester@testtools.com')
+    const testerUser = createdUsers.find(u => u.email === 'tester@qauthority.com')
     if (testerUser && Math.random() > 0.5) {
       await prisma.testCaseAssignee.upsert({
         where: { testCaseId_userId: { testCaseId: tc.id, userId: testerUser.id } },
@@ -528,8 +528,8 @@ async function main() {
   }
 
   // ── Test Executions ────────────────────────────────────────────────────────
-  const testerUser = createdUsers.find(u => u.email === 'tester@testtools.com')
-  const leadUser = createdUsers.find(u => u.email === 'lead@testtools.com')
+  const testerUser = createdUsers.find(u => u.email === 'tester@qauthority.com')
+  const leadUser = createdUsers.find(u => u.email === 'lead@qauthority.com')
 
   const statusPass = await prisma.enumValue.findUniqueOrThrow({ where: { id: 'seed-execution_status-pass' } })
   const statusFail = await prisma.enumValue.findUniqueOrThrow({ where: { id: 'seed-execution_status-fail' } })
@@ -620,7 +620,7 @@ async function main() {
   ]
 
   for (const bug of bugs) {
-    await prisma.bug.upsert({
+    await prisma.defect.upsert({
       where: { id: bug.id },
       create: {
         id: bug.id,
