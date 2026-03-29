@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useEffect } from "react"
 import { useSidebarState } from "@/hooks/useSidebarState"
 import { usePermissions } from "@/contexts/PermissionsContext"
-import { ROUTE_TO_MODULE, MODULE_LABELS, type ModuleId } from "@/lib/navigation"
+import { ROUTE_TO_MODULE, MODULE_LABELS, MODULE_PERMISSION_KEYS, ALL_MODULES, type ModuleId } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -17,24 +17,6 @@ const MODULE_ICONS: Record<ModuleId, React.ComponentType<{ className?: string }>
   "users-groups": Users,
   admin: Settings,
 }
-
-const MODULE_PERMISSIONS: Record<ModuleId, string> = {
-  "test-management": "TEST_PLANS",
-  governance: "QA_GOVERNANCE",
-  reports: "REPORTING",
-  integrations: "INTEGRATIONS",
-  "users-groups": "USERS_GROUPS",
-  admin: "ADMIN",
-}
-
-const ALL_MODULES: ModuleId[] = [
-  "test-management",
-  "governance",
-  "reports",
-  "integrations",
-  "users-groups",
-  "admin",
-]
 
 export function ModuleRail() {
   const pathname = usePathname()
@@ -48,7 +30,7 @@ export function ModuleRail() {
   }, [pathname, setActiveModule])
 
   const visibleModules = ALL_MODULES.filter(
-    m => can(MODULE_PERMISSIONS[m], "read")
+    m => can(MODULE_PERMISSION_KEYS[m], "read")
   )
 
   return (

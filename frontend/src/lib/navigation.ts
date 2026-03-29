@@ -63,6 +63,27 @@ export const MODULE_LABELS: Record<ModuleId, string> = {
   admin: "Admin",
 }
 
+// Maps each module to the ModuleType permission key that gates access to it.
+// TEST_PLANS is used as the representative gate for the entire test-management module.
+// IMPORTANT: ROUTE_TO_MODULE order is load-bearing — specific prefixes must appear before catch-alls.
+export const MODULE_PERMISSION_KEYS: Record<ModuleId, string> = {
+  "test-management": "TEST_PLANS",
+  governance: "QA_GOVERNANCE",
+  reports: "REPORTING",
+  integrations: "INTEGRATIONS",
+  "users-groups": "USERS_GROUPS",
+  admin: "ADMIN",
+}
+
+export const ALL_MODULES: ModuleId[] = [
+  "test-management",
+  "governance",
+  "reports",
+  "integrations",
+  "users-groups",
+  "admin",
+]
+
 export const sidebarNavigation: NavSection[] = [
   {
     moduleId: "test-management",

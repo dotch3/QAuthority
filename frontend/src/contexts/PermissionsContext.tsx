@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { permissionsApi, type PermissionEntry } from "@/lib/api"
+import { useAuth } from "@/components/providers/AuthProvider"
 
 interface PermissionsContextValue {
   matrix: Record<string, PermissionEntry>
@@ -18,8 +19,15 @@ const PermissionsContext = createContext<PermissionsContextValue>({
 export function PermissionsProvider({ children }: { children: ReactNode }) {
   const [matrix, setMatrix] = useState<Record<string, PermissionEntry>>({})
   const [loaded, setLoaded] = useState(false)
+  const { user } = useAuth()
 
   useEffect(() => {
+    if (!user) {
+      setMatrix({})
+      setLoaded(true)
+      return
+    }
+    setLoaded(false)
     permissionsApi.getMyMatrix()
       .then(res => {
         setMatrix(res)
@@ -28,7 +36,7 @@ export function PermissionsProvider({ children }: { children: ReactNode }) {
       .catch(() => {
         setLoaded(true)
       })
-  }, [])
+  }, [user])
 
   const can = (module: string, action: "create" | "read" | "update" | "delete" | "export") => {
     if (!loaded) return true
