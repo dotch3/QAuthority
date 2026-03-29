@@ -14,7 +14,7 @@
 | Plan 1 | Navigation / UI Restructure | ✅ Complete | 11 / 11 tasks |
 | Plan 2 | KPIs / OKRs / Metrics Dashboard | ⏳ Not Started | 0 / 9 tasks |
 | Plan 3 | Advanced Reporting | ⏳ Not Started | 0 / 7 tasks |
-| Plan 4 | CI/CD & External Integrations | ⏳ Not Started | 0 / 7 tasks |
+| Plan 4 | CI/CD & External Integrations | ✅ Complete | 7 / 7 tasks |
 | Plan 5 | Visual QA Process Designer | ⏳ Not Started | 0 / 7 tasks |
 | Plan 6 | AI Code Generation | ⏳ Not Started | 0 / 7 tasks |
 | Plan 7 | QAuthority Rebranding | ✅ Complete | 7 / 7 tasks |
@@ -53,6 +53,20 @@
 | P1-T9 | Update AppShell to include ModuleRail | ✅ Complete |
 | P1-T10 | Update mobile drawer in ModuleSidebar | ✅ Complete |
 | P1-T11 | Add i18n keys for new nav items | ✅ Complete |
+
+---
+
+## Plan 4 — CI/CD & External Integrations
+
+| Task | Description | Status |
+|------|-------------|--------|
+| P4-T1 | Install fast-xml-parser dependency | ✅ Complete |
+| P4-T2 | Prisma Schema — Add CIBuild and ExternalIssue models | ✅ Complete |
+| P4-T3 | JUnitParserService (TDD) | ✅ Complete |
+| P4-T4 | CIBuildSyncService (TDD) | ✅ Complete |
+| P4-T5 | ExternalIssueService | ✅ Complete |
+| P4-T6 | Routes — CI/CD webhook + External Issues endpoints | ✅ Complete |
+| P4-T7 | Frontend — CI/CD and External Issues pages | ✅ Complete |
 
 ---
 
