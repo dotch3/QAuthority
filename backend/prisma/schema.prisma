@@ -213,6 +213,7 @@ model Project {
   pbcSnapshots       PBCSnapshot[]
   ciBuilds           CIBuild[]
   reportTemplates    ReportTemplate[]
+  workflows          QAWorkflow[]
 
   @@map("projects")
 }
@@ -964,4 +965,62 @@ model ReportJob {
   template    ReportTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   @@map("report_jobs")
+}
+
+// ─── Visual QA Process Designer ───────────────────────────────────────────────
+
+enum BlockType {
+  BRAINSTORMING
+  RISK_ANALYSIS
+  RACI_MATRIX
+  ORACLE_DEFINITION
+  SANITY_SMOKE
+  ENVIRONMENT_SETUP
+  SIGN_OFF
+  NOTE
+  DECISION
+  SUBPROCESS
+}
+
+model QAWorkflow {
+  id          String          @id @default(uuid())
+  projectId   String
+  name        String
+  description String?
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  blocks      WorkflowBlock[]
+  edges       WorkflowEdge[]
+  createdById String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("qa_workflows")
+}
+
+model WorkflowBlock {
+  id         String        @id @default(uuid())
+  workflowId String
+  type       BlockType
+  label      String
+  posX       Float
+  posY       Float
+  config     Json?
+  workflow   QAWorkflow    @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  outgoing   WorkflowEdge[] @relation("EdgeSource")
+  incoming   WorkflowEdge[] @relation("EdgeTarget")
+
+  @@map("workflow_blocks")
+}
+
+model WorkflowEdge {
+  id            String        @id @default(uuid())
+  workflowId    String
+  sourceBlockId String
+  targetBlockId String
+  label         String?
+  workflow      QAWorkflow    @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  source        WorkflowBlock @relation("EdgeSource", fields: [sourceBlockId], references: [id], onDelete: Cascade)
+  target        WorkflowBlock @relation("EdgeTarget", fields: [targetBlockId], references: [id], onDelete: Cascade)
+
+  @@map("workflow_edges")
 }

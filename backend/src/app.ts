@@ -29,6 +29,7 @@ import { cicdRoutes } from './interfaces/http/routes/cicd.js'
 import { externalIssuesRoutes } from './interfaces/http/routes/externalIssues.js'
 import { reportsRoutes } from './interfaces/http/routes/reports.js'
 import { metricsExportRoutes } from './interfaces/http/routes/metricsExport.js'
+import { workflowRoutes } from './interfaces/http/routes/workflows.js'
 import { logger } from './logger.js'
 import { NotFoundError, ForbiddenError, BadRequestError, UnauthorizedError } from './utils/errors.js'
 
@@ -118,6 +119,7 @@ export async function buildApp() {
   await app.register(externalIssuesRoutes, { prefix: '/api/v1' })
   await app.register(reportsRoutes, { prefix: '/api/v1' })
   await app.register(metricsExportRoutes, { prefix: '/api/v1' })
+  await app.register(workflowRoutes, { prefix: '/api/v1' })
 
   return app
 }
