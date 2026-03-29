@@ -15,7 +15,7 @@
 | Plan 2 | KPIs / OKRs / Metrics Dashboard | ✅ Complete | 9 / 9 tasks |
 | Plan 3 | Advanced Reporting | ✅ Complete | 7 / 7 tasks |
 | Plan 4 | CI/CD & External Integrations | ✅ Complete | 7 / 7 tasks |
-| Plan 5 | Visual QA Process Designer | ⏳ Not Started | 0 / 7 tasks |
+| Plan 5 | Visual QA Process Designer | ✅ Complete | 7 / 7 tasks |
 | Plan 6 | AI Code Generation | ⏳ Not Started | 0 / 7 tasks |
 | Plan 7 | QAuthority Rebranding | ✅ Complete | 7 / 7 tasks |
 
@@ -97,6 +97,20 @@
 | P4-T5 | ExternalIssueService | ✅ Complete |
 | P4-T6 | Routes — CI/CD webhook + External Issues endpoints | ✅ Complete |
 | P4-T7 | Frontend — CI/CD and External Issues pages | ✅ Complete |
+
+---
+
+## Plan 5 — Visual QA Process Designer
+
+| Task | Description | Status |
+|------|-------------|--------|
+| P5-T1 | Install reactflow dependency | ✅ Complete |
+| P5-T2 | Prisma Schema — QAWorkflow models | ✅ Complete |
+| P5-T3 | MermaidExportService (TDD) | ✅ Complete |
+| P5-T4 | WorkflowService | ✅ Complete |
+| P5-T5 | Workflow Routes | ✅ Complete |
+| P5-T6 | Frontend — Process Designer Canvas | ✅ Complete |
+| P5-T7 | Frontend — Process Designer Pages | ✅ Complete |
 
 ---
 
