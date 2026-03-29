@@ -25,6 +25,8 @@ import { setupWizardRoutes } from './interfaces/http/routes/setupWizard.js'
 import { permissionsRoutes } from './interfaces/http/routes/permissions.js'
 import { metricsRoutes } from './interfaces/http/routes/metrics.js'
 import { okrRoutes } from './interfaces/http/routes/okrs.js'
+import { cicdRoutes } from './interfaces/http/routes/cicd.js'
+import { externalIssuesRoutes } from './interfaces/http/routes/externalIssues.js'
 import { logger } from './logger.js'
 import { NotFoundError, ForbiddenError, BadRequestError, UnauthorizedError } from './utils/errors.js'
 
@@ -110,6 +112,8 @@ export async function buildApp() {
   await app.register(permissionsRoutes, { prefix: '/api/v1' })
   await app.register(metricsRoutes, { prefix: '/api/v1' })
   await app.register(okrRoutes, { prefix: '/api/v1' })
+  await app.register(cicdRoutes, { prefix: '/api/v1' })
+  await app.register(externalIssuesRoutes, { prefix: '/api/v1' })
 
   return app
 }

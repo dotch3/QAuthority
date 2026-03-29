@@ -211,6 +211,7 @@ model Project {
   okrs               OKR[]
   metricSnapshots    MetricSnapshot[]
   pbcSnapshots       PBCSnapshot[]
+  ciBuilds        CIBuild[]
 
   @@map("projects")
 }
@@ -500,6 +501,7 @@ model Defect {
   executions BugTestExecution[]
   etCharters BugETCharter[]
   tags       BugTag[]
+  externalIssues ExternalIssue[]
 
   @@map("defects")
 }
@@ -592,11 +594,15 @@ model Integration {
   type        EnumValue @relation(fields: [typeId], references: [id])
   config      Json      @default("{}")  // {base_url, project_key, repo, ...}
   credential  String?                   // encrypted API token / PAT
+  webhookSecret String?                 // secret for webhook authentication
   active      Boolean   @default(true)
   createdById String
   createdBy   User      @relation(fields: [createdById], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  ciBuilds       CIBuild[]
+  externalIssues ExternalIssue[]
 
   @@map("integrations")
 }
@@ -844,4 +850,55 @@ model ExecutiveDashboard {
   createdAt   DateTime @default(now())
 
   @@map("executive_dashboards")
+}
+
+// ─── CI/CD & External Integrations ─────────────────────────────────────────
+
+enum BuildStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+enum ExternalProvider {
+  JIRA
+  GITHUB
+  GITLAB
+  JENKINS
+}
+
+model CIBuild {
+  id                 String      @id @default(uuid())
+  integrationId      String
+  projectId          String
+  buildNumber        String
+  branch             String
+  status             BuildStatus
+  testResultsPayload Json?
+  triggeredAt        DateTime
+  completedAt        DateTime?
+  integration        Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt          DateTime    @default(now())
+
+  @@map("ci_builds")
+}
+
+model ExternalIssue {
+  id            String           @id @default(uuid())
+  integrationId String
+  externalId    String
+  provider      ExternalProvider
+  title         String
+  status        String
+  url           String
+  linkedBugId   String?
+  integration   Integration      @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  bug           Defect?           @relation(fields: [linkedBugId], references: [id])
+  syncedAt      DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+
+  @@unique([integrationId, externalId])
+  @@map("external_issues")
 }
