@@ -256,7 +256,7 @@ export default function TestSuiteDetailPage() {
                               <div className="flex -space-x-2">
                                 {caseItem.assignees.slice(0, 3).map((assignee) => (
                                   <Avatar
-                                    key={assignee.id}
+                                    key={assignee.userId}
                                     className="h-6 w-6 border-2 border-background"
                                   >
                                     <AvatarFallback className="text-[10px]">
