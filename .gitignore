@@ -6,6 +6,7 @@ logs/
 data/
 .DS_Store
 .claude/
+.agents/
 
 # Environment files (never commit these)
 .env
@@ -22,8 +23,11 @@ frontend/.env.local
 # Docs (keep plans but ignore generated files)
 docs/superpowers/generated/
 docs/superpowers/plans
+docs/implementation
 
 
+AGENTS.md
+CLAUDE.md
 docker-compose-smtp.yml
 
 TODO.md
