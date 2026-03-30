@@ -14,7 +14,7 @@
 
 ## ⚠️ Path & URL Convention — Read This First
 
-Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is **NOT in the URL** — the app uses `localePrefix: 'never'` in `middleware.ts`. URL is `/governance/executive` not `/en/governance/executive`. Use `Link` from `next-intl` with clean hrefs.
+Pages live under `frontend/src/app/(app)/`. The route groups `(auth)` and `(app)` are NOT visible in URLs.
 
 ---
 
@@ -40,10 +40,10 @@ Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is *
 - `backend/prisma/schema.prisma`
 
 ### Frontend — New
-- `frontend/src/app/[locale]/(app)/governance/executive/page.tsx`
-- `frontend/src/app/[locale]/(app)/governance/project/page.tsx`
-- `frontend/src/app/[locale]/(app)/governance/okrs/page.tsx`
-- `frontend/src/app/[locale]/(app)/governance/kpis/page.tsx`
+- `frontend/src/app/(app)/governance/executive/page.tsx`
+- `frontend/src/app/(app)/governance/project/page.tsx`
+- `frontend/src/app/(app)/governance/okrs/page.tsx`
+- `frontend/src/app/(app)/governance/kpis/page.tsx`
 - `frontend/src/components/governance/ExecutiveDashboard.tsx`
 - `frontend/src/components/governance/ProjectDashboard.tsx`
 - `frontend/src/components/governance/OKRCard.tsx`

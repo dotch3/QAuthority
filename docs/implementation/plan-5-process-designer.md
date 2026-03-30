@@ -14,7 +14,7 @@
 
 ## ⚠️ Path & URL Convention — Read This First
 
-Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is **NOT in the URL** — the app uses `localePrefix: 'never'` in `middleware.ts`. URL is `/governance/processes` not `/en/governance/processes`. Use `Link` from `next-intl` with clean hrefs.
+Pages live under `frontend/src/app/(app)/`. The route groups `(auth)` and `(app)` are NOT visible in URLs.
 
 ---
 
@@ -32,8 +32,8 @@ Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is *
 - `backend/src/interfaces/http/routes/index.ts`
 
 ### Frontend — New
-- `frontend/src/app/[locale]/(app)/governance/processes/page.tsx`
-- `frontend/src/app/[locale]/(app)/governance/processes/[id]/page.tsx`
+- `frontend/src/app/(app)/governance/processes/page.tsx`
+- `frontend/src/app/(app)/governance/processes/[id]/page.tsx`
 - `frontend/src/components/process-designer/WorkflowCanvas.tsx`
 - `frontend/src/components/process-designer/BlockPalette.tsx`
 - `frontend/src/components/process-designer/WorkflowList.tsx`

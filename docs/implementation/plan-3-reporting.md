@@ -14,7 +14,7 @@
 
 ## ⚠️ Path & URL Convention — Read This First
 
-Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is **NOT in the URL** — the app uses `localePrefix: 'never'` in `middleware.ts`. URL is `/reports/templates` not `/en/reports/templates`. Use `Link` from `next-intl` with clean hrefs.
+Pages live under `frontend/src/app/(app)/`. The route groups `(auth)` and `(app)` are NOT visible in URLs.
 
 ---
 
@@ -36,9 +36,9 @@ Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is *
 - `backend/package.json` (add pdfkit, docx, exceljs)
 
 ### Frontend — New
-- `frontend/src/app/[locale]/(app)/reports/templates/page.tsx`
-- `frontend/src/app/[locale]/(app)/reports/history/page.tsx`
-- `frontend/src/app/[locale]/(app)/reports/export/page.tsx`
+- `frontend/src/app/(app)/reports/templates/page.tsx`
+- `frontend/src/app/(app)/reports/history/page.tsx`
+- `frontend/src/app/(app)/reports/export/page.tsx`
 - `frontend/src/components/reports/ReportTemplateForm.tsx`
 - `frontend/src/components/reports/ReportJobList.tsx`
 

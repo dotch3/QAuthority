@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 
 interface ProjectDetailPageProps {
-  params: Promise<{ id: string; locale: string }>
+  params: Promise<{ id: string }>
 }
 
 export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {

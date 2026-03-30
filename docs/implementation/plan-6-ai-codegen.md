@@ -14,7 +14,7 @@
 
 ## ⚠️ Path & URL Convention — Read This First
 
-Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is **NOT in the URL** — the app uses `localePrefix: 'never'` in `middleware.ts`. URL is `/ai/generator` not `/en/ai/generator`. Use `Link` from `next-intl` with clean hrefs.
+Pages live under `frontend/src/app/(app)/`. The route groups `(auth)` and `(app)` are NOT visible in URLs.
 
 ---
 
@@ -34,8 +34,8 @@ Pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` segment is *
 - `backend/src/interfaces/http/routes/index.ts`
 
 ### Frontend — New
-- `frontend/src/app/[locale]/(app)/ai/generator/page.tsx`
-- `frontend/src/app/[locale]/(app)/ai/providers/page.tsx`
+- `frontend/src/app/(app)/ai/generator/page.tsx`
+- `frontend/src/app/(app)/ai/providers/page.tsx`
 - `frontend/src/components/ai/CodeGeneratorPanel.tsx`
 - `frontend/src/components/ai/GeneratedCodeViewer.tsx`
 - `frontend/src/components/ai/AIProviderForm.tsx`

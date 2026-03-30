@@ -12,11 +12,11 @@
 
 ## ⚠️ Path & URL Convention — Read This First
 
-All new pages live under `frontend/src/app/[locale]/(app)/`. The `[locale]` in the file path is **NOT visible in URLs** — the middleware uses `localePrefix: 'never'`, so `/admin/groups` is the actual URL (not `/en/admin/groups`). Do NOT change `frontend/src/middleware.ts`.
+All new pages live under `frontend/src/app/(app)/`. The route groups `(auth)` and `(app)` are NOT visible in URLs.
 
-**Exception — Setup Wizard** (no auth): `frontend/src/app/[locale]/setup/page.tsx` → URL: `/setup`
+**Setup Wizard** (no auth): `frontend/src/app/setup/page.tsx` → URL: `/setup`
 
-Always use `Link` from `next-intl` (not `next/link`) with clean hrefs like `href="/admin/groups"`.
+Always use `Link` from `next/link` with clean hrefs like `href="/admin/groups"`.
 
 ---
 
@@ -41,8 +41,8 @@ Always use `Link` from `next-intl` (not `next/link`) with clean hrefs like `href
 - `backend/prisma/seed.ts` — call groups seed
 
 ### Frontend — New Files
-- `frontend/src/app/[locale]/(app)/admin/groups/page.tsx`
-- `frontend/src/app/[locale]/(app)/admin/groups/[id]/page.tsx`
+- `frontend/src/app/(app)/admin/groups/page.tsx`
+- `frontend/src/app/(app)/admin/groups/[id]/page.tsx`
 - `frontend/src/app/setup/page.tsx`
 - `frontend/src/components/admin/groups/GroupList.tsx`
 - `frontend/src/components/admin/groups/GroupForm.tsx`
@@ -50,7 +50,7 @@ Always use `Link` from `next-intl` (not `next/link`) with clean hrefs like `href
 - `frontend/src/components/setup/SetupWizard.tsx`
 
 ### Frontend — Modified Files
-- `frontend/src/app/[locale]/(app)/admin/layout.tsx` — add Groups nav item
+- `frontend/src/app/(app)/admin/layout.tsx` — add Groups nav item
 - `frontend/src/lib/api.ts` — add group/permission API calls
 
 ---

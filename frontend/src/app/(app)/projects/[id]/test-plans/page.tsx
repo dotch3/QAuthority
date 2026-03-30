@@ -258,7 +258,7 @@ function EditPlanDialog({
 }
 
 interface PageProps {
-  params: Promise<{ id: string; locale: string }>
+  params: Promise<{ id: string }>
 }
 
 export default function ProjectTestPlansPage({ params }: PageProps) {

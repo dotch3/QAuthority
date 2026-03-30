@@ -9,7 +9,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useState } from "react"
 import { APP_CONFIG } from "@/lib/config"
 import Link from "next/link"
-import { useLocale } from "next-intl"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { usePermissions } from "@/contexts/PermissionsContext"
@@ -26,7 +25,6 @@ const MODULE_ICONS: Record<ModuleId, React.ComponentType<{ className?: string }>
 export function ModuleSidebar() {
   const { isCollapsed, toggleCollapse, activeModule, setActiveModule } = useSidebarState()
   const [mobileOpen, setLocalMobileOpen] = useState(false)
-  const locale = useLocale()
   const { can } = usePermissions()
 
   const visibleModules = ALL_MODULES.filter(m => can(MODULE_PERMISSION_KEYS[m], "read"))
@@ -58,7 +56,7 @@ export function ModuleSidebar() {
         </SheetTrigger>
         <SheetContent side="left" className="w-72 p-0 bg-sidebar-bg">
           <div className="flex h-14 items-center border-b px-4">
-            <Link href={`/${locale}/dashboard`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <ShieldCheck className="h-6 w-6 text-primary" />
               <span className="font-semibold">{APP_CONFIG.name}</span>
               <span className="text-xs text-muted-foreground">v{APP_CONFIG.version}</span>
@@ -100,8 +98,6 @@ function SidebarContent({
   onToggleCollapse: () => void
   activeModule: ModuleId
 }) {
-  const locale = useLocale()
-
   return (
     <>
       <div
@@ -110,7 +106,7 @@ function SidebarContent({
         }`}
       >
         <Link
-          href={`/${locale}/dashboard`}
+          href="/dashboard"
           className={`flex items-center gap-2 hover:opacity-80 transition-opacity ${
             isCollapsed ? "" : "flex-1"
           }`}

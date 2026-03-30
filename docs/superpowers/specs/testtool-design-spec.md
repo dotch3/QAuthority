@@ -41,7 +41,7 @@ Clean architecture with layers:
 
 Next.js 16 App Router with:
 - Route groups: `(auth)` for public pages, `(app)` for authenticated
-- `[locale]` segment for i18n
+- next-intl for i18n (no locale prefix in URLs)
 - shadcn/ui components
 - Server and client components appropriately
 
@@ -114,7 +114,7 @@ Next.js 16 App Router with:
 - CSS variables with shadcn/ui palette
 
 ### Internationalization
-- next-intl with locale routing (`/[locale]/...`)
+- next-intl for translations (clean URLs without locale prefix)
 - Default locale from SYSTEM_SETTINGS
 - Per-user locale preference
 - Date/number formatting per locale

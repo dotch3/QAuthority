@@ -14,7 +14,7 @@
 - Module visibility uses `PermissionsContext` (React Context, not Zustand)
 - Mobile: existing Sheet drawer is kept and updated to show module selector + items
 
-**Tech Stack:** Next.js 16 App Router `[locale]/(app)`, next-intl, React Context, Tailwind CSS 4, shadcn/ui, existing useSidebarState hook
+**Tech Stack:** Next.js 16 App Router `(app)`, next-intl, React Context, Tailwind CSS 4, shadcn/ui, existing useSidebarState hook
 
 **Depends on:** Plan 0 (groups/permissions seeded before visibility logic works)
 
@@ -22,20 +22,16 @@
 
 ## ⚠️ Path & URL Convention — Read This First
 
-All new pages live under `frontend/src/app/[locale]/(app)/`. Never create pages directly under `frontend/src/app/` without the `[locale]/(app)/` prefix — they will 404.
+All new pages live under `frontend/src/app/(app)/`. Never create pages directly under `frontend/src/app/` without the `(app)/` prefix — they will 404.
 
-**The `[locale]` in the file path is NOT visible in URLs.** The middleware is already configured with `localePrefix: 'never'`, so:
-- File: `app/[locale]/(app)/governance/executive/page.tsx`
-- URL:  `/governance/executive`  ✅
+The route groups `(auth)` and `(app)` are NOT visible in URLs.
 
-Always use `Link` from `next-intl` (not `next/link`) and write clean `href` values without locale prefix:
+Always use `Link` from `next/link` with clean `href` values:
 ```typescript
-import { Link } from 'next-intl'
+import Link from 'next/link'
 // ...
 <Link href="/governance/executive">...</Link>
 ```
-
-Do NOT change `frontend/src/middleware.ts` — `localePrefix: 'never'` is already correctly set.
 
 ---
 
