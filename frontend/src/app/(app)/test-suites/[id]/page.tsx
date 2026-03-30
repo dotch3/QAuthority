@@ -26,23 +26,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, Eye, Copy, Move } from "lucide-react"
 import { ETCharterList } from "@/components/et-charters/ETCharterList"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AssigneeDialog } from "@/components/test-cases/AssigneeDialog"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { TestCaseFormDialog } from "@/components/test-cases/TestCaseList"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { User } from "lucide-react"
 
 interface TestCase {
   id: string
   title: string
   description?: string
-  priority: { value: string; label: string; color: string }
-  type: { value: string; label: string }
+  preconditions?: string
+  notes?: string
+  priority: { id: string; value: string; label: string; color: string }
+  type: { id: string; value: string; label: string }
   suite: { id: string; name: string }
   status: string
   tags: Array<{ id: string; name: string; color: string }>
-  assignees: Array<{ id: string; name?: string; email: string }>
+  assignees: Array<{ id: string; userId?: string; name?: string; email: string }>
+  steps?: Array<{ order: number; action: string; expectedResult: string }>
   lastExecution?: { status: { value: string; label: string; color: string }; executedAt: string }
   _count: { executions: number }
 }
@@ -71,6 +82,9 @@ export default function TestSuiteDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"cases" | "charters">("cases")
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [editingCase, setEditingCase] = useState<TestCase | null>(null)
+  const [copyMoveCase, setCopyMoveCase] = useState<{ testCase: TestCase; mode: "copy" | "move" } | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!selectedProject || !suiteId) return
@@ -88,19 +102,23 @@ export default function TestSuiteDetailPage() {
         id: tc.id,
         title: tc.title,
         description: tc.description,
+        preconditions: tc.preconditions,
+        notes: tc.notes,
         priority: tc.priority ? { 
+          id: tc.priority.id,
           value: tc.priority.value, 
           label: tc.priority.label, 
           color: tc.priority.color 
-        } : { value: 'medium', label: 'Medium', color: '#f59e0b' },
-        type: tc.type ? { value: tc.type.value, label: tc.type.label } : { value: 'manual', label: 'Manual' },
+        } : { id: 'seed-test_priority-medium', value: 'medium', label: 'Medium', color: '#f59e0b' },
+        type: tc.type ? { id: tc.type.id, value: tc.type.value, label: tc.type.label } : { id: 'seed-test_type-manual', value: 'manual', label: 'Manual' },
         suite: { 
           id: suiteId, 
           name: suiteData.name,
         },
         status: 'active',
         tags: (tc.tags || []).map((t: any) => ({ id: t.id, name: t.name, color: t.color })),
-        assignees: (tc.assignees || []).map((a: any) => ({ id: a.id, name: a.name, email: a.email })),
+        assignees: (tc.assignees || []).map((a: any) => ({ id: a.id, userId: a.userId, name: a.user?.name, email: a.user?.email })),
+        steps: tc.steps || [],
         lastExecution: tc.lastExecution,
         _count: { executions: tc._count?.executions || 0 },
       })))
@@ -121,7 +139,30 @@ export default function TestSuiteDetailPage() {
     }
   }
 
-  const handleAssigneesChange = (caseId: string, newAssignees: TestCase["assignees"]) => {
+  const handleUpdate = async (data: any) => {
+    if (!editingCase) return
+    setIsSubmitting(true)
+    try {
+      const updated = await api.patch(`/cases/${editingCase.id}`, data)
+      setCases(cases.map(c => c.id === editingCase.id ? {
+        ...c,
+        title: data.title,
+        description: data.description,
+        preconditions: data.preconditions,
+        notes: data.notes,
+        priority: { id: data.priorityId, value: data.priorityId.replace('seed-test_priority-', ''), label: data.priorityId.includes('low') ? 'Low' : data.priorityId.includes('medium') ? 'Medium' : data.priorityId.includes('high') ? 'High' : 'Critical', color: '#888' },
+        type: { id: data.typeId, value: data.typeId.replace('seed-test_type-', ''), label: data.typeId.includes('manual') ? 'Manual' : data.typeId.includes('automated') ? 'Automated' : data.typeId.includes('exploratory') ? 'Exploratory' : 'Regression' },
+      } : c))
+      setEditingCase(null)
+    } catch (err) {
+      console.error("Failed to update case:", err)
+      alert(err instanceof Error ? err.message : "Failed to update test case")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleAssigneesChange = (caseId: string, newAssignees: Array<{ id: string; userId?: string; name?: string; email: string }>) => {
     setCases(cases.map(c => c.id === caseId ? { ...c, assignees: newAssignees } : c))
   }
 
@@ -231,7 +272,12 @@ export default function TestSuiteDetailPage() {
                     <TableRow key={caseItem.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{caseItem.title}</p>
+                          <p 
+                            className="font-medium cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => setEditingCase(caseItem)}
+                          >
+                            {caseItem.title}
+                          </p>
                           {caseItem.description && (
                             <p className="text-sm text-muted-foreground line-clamp-1">
                               {caseItem.description}
@@ -256,7 +302,7 @@ export default function TestSuiteDetailPage() {
                               <div className="flex -space-x-2">
                                 {caseItem.assignees.slice(0, 3).map((assignee, idx) => (
                                   <Avatar
-                                    key={`${assignee.userId}-${idx}`}
+                                    key={`${(assignee as any).userId || assignee.id}-${idx}`}
                                     className="h-6 w-6 border-2 border-background"
                                   >
                                     <AvatarFallback className="text-[10px]">
@@ -319,9 +365,17 @@ export default function TestSuiteDetailPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem disabled>
+                            <DropdownMenuItem onClick={() => setEditingCase(caseItem)}>
                               <Pencil className="mr-2 h-4 w-4" />
                               Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setCopyMoveCase({ testCase: caseItem, mode: "copy" })}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Copy to Suite
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setCopyMoveCase({ testCase: caseItem, mode: "move" })}>
+                              <Move className="mr-2 h-4 w-4" />
+                              Move to Suite
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -359,6 +413,31 @@ export default function TestSuiteDetailPage() {
         description="Are you sure you want to delete this test case? This action cannot be undone."
         onConfirm={() => deleteConfirm && handleDeleteCase(deleteConfirm)}
       />
+
+      <TestCaseFormDialog
+        isOpen={!!editingCase}
+        onClose={() => setEditingCase(null)}
+        onSubmit={handleUpdate}
+        testCase={editingCase as any}
+        isSubmitting={isSubmitting}
+        error=""
+        suiteId={suiteId}
+        projectId={selectedProject?.id}
+      />
+
+      <Dialog open={!!copyMoveCase} onOpenChange={(open) => !open && setCopyMoveCase(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{copyMoveCase?.mode === 'copy' ? 'Copy' : 'Move'} Test Case</DialogTitle>
+            <DialogDescription>
+              Select a target suite to {copyMoveCase?.mode} "{copyMoveCase?.testCase.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-4">
+            This feature requires selecting a target suite. Use the Test Cases page for full copy/move functionality.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -117,7 +117,7 @@ export default function AdminSettingsPage() {
                     {t("settings.emailNotificationsDesc")}
                   </p>
                 </div>
-                <input type="checkbox" defaultChecked className="h-4 w-4" />
+                <input type="checkbox" defaultChecked className="h-4 w-4 accent-primary cursor-pointer rounded" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -126,7 +126,7 @@ export default function AdminSettingsPage() {
                     {t("settings.executionAlertsDesc")}
                   </p>
                 </div>
-                <input type="checkbox" defaultChecked className="h-4 w-4" />
+                <input type="checkbox" defaultChecked className="h-4 w-4 accent-primary cursor-pointer rounded" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -135,7 +135,7 @@ export default function AdminSettingsPage() {
                     {t("settings.weeklySummaryDesc")}
                   </p>
                 </div>
-                <input type="checkbox" className="h-4 w-4" />
+                <input type="checkbox" className="h-4 w-4 accent-primary cursor-pointer rounded" />
               </div>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function AdminSettingsPage() {
                     {t("settings.twoFactorAuthDesc")}
                   </p>
                 </div>
-                <input type="checkbox" className="h-4 w-4" />
+                <input type="checkbox" className="h-4 w-4 accent-primary cursor-pointer rounded" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -181,7 +181,7 @@ export default function AdminSettingsPage() {
                     {t("settings.passwordPolicyDesc")}
                   </p>
                 </div>
-                <input type="checkbox" defaultChecked className="h-4 w-4" />
+                <input type="checkbox" defaultChecked className="h-4 w-4 accent-primary cursor-pointer rounded" />
               </div>
             </div>
           </div>

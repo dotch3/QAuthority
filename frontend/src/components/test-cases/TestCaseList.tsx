@@ -168,7 +168,7 @@ function EvidenceManagerForTestCase({ caseId, suiteId }: { caseId: string; suite
   )
 }
 
-function TestCaseFormDialog({
+export function TestCaseFormDialog({
   isOpen,
   onClose,
   onSubmit,

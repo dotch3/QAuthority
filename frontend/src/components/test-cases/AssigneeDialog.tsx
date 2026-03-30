@@ -122,36 +122,34 @@ export function AssigneeDialog({
 
         <div className="space-y-4 py-4">
           {assignees.length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">
-                Current Assignees
-              </Label>
               <div className="space-y-2">
-                {assignees.map((assignee) => (
-                  <div
-                    key={assignee.id}
-                    className="flex items-center justify-between p-2 rounded-md border"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-7 w-7">
-                        <AvatarFallback className="text-xs">
-                          {(assignee.name || assignee.email)
-                            .charAt(0)
-                            .toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium">
-                          {assignee.name || assignee.email}
-                        </p>
-                        {assignee.name && (
-                          <p className="text-xs text-muted-foreground">
-                            {assignee.email}
+                <Label className="text-sm font-medium text-muted-foreground">
+                  Current Assignees
+                </Label>
+                <div className="space-y-2">
+                  {assignees.map((assignee) => (
+                    <div
+                      key={assignee.id}
+                      className="flex items-center justify-between p-2 rounded-md border"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className="text-xs">
+                            {((assignee.name || assignee.email) || '?').charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {assignee.name || assignee.email}
                           </p>
-                        )}
+                          {assignee.name && (
+                            <p className="text-xs text-muted-foreground">
+                              {assignee.email}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <Button
+                      <Button
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
