@@ -31,3 +31,6 @@ CLAUDE.md
 docker-compose-smtp.yml
 
 TODO.md
+examples/
+REDESIGN.md
+INFO-GOV.md

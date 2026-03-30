@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes how to manage database migrations for TestTool.
+This document describes how to manage database migrations for QAuthority.
 
 ## Commands
 
@@ -70,7 +70,7 @@ psql $DATABASE_URL -f prisma/migrations/20260325120001_clean_data/migration.sql
 
 Make sure your `.env` file has:
 ```env
-DATABASE_URL=postgresql://user:pass@localhost:5432/testtool
+DATABASE_URL=postgresql://user:pass@localhost:5432/qauthority
 ```
 
 ## Troubleshooting

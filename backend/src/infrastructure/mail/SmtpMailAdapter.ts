@@ -24,7 +24,7 @@ export class SmtpMailAdapter implements IMailAdapter {
     await this.transporter.sendMail({
       from: this.from,
       to,
-      subject: 'Reset your TestTool password',
+      subject: 'Reset your QAuthority password',
       html: `<p>Click the link below to reset your password. It expires in 1 hour.</p>
              <p><a href="${resetUrl}">${resetUrl}</a></p>`,
     })
@@ -41,11 +41,11 @@ export class SmtpMailAdapter implements IMailAdapter {
     await this.transporter.sendMail({
       from: this.from,
       to,
-      subject: 'Welcome to TestTool!',
+      subject: 'Welcome to QAuthority!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to TestTool!</h1>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to QAuthority!</h1>
           </div>
           <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
             <p style="color: #333; font-size: 16px;">Hi <strong>${displayName}</strong>,</p>
@@ -59,7 +59,7 @@ export class SmtpMailAdapter implements IMailAdapter {
             </div>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${loginUrl}" style="background: #667eea; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                Go to TestTool
+                Go to QAuthority
               </a>
             </div>
             <p style="color: #999; font-size: 13px; text-align: center;">
@@ -69,7 +69,7 @@ export class SmtpMailAdapter implements IMailAdapter {
           </div>
           <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
             <hr style="border: none; border-top: 1px solid #eee; margin: 0 0 15px 0;">
-            This is an automated message from TestTool. Please do not reply to this email.
+            This is an automated message from QAuthority. Please do not reply to this email.
           </div>
         </div>
       `,

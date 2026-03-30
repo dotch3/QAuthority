@@ -1,6 +1,6 @@
 # QAuthority — Implementation Plans Index
 
-> **Spec:** `docs/superpowers/specs/2026-03-27-testtool-governance-design.md`
+> **Spec:** `docs/superpowers/specs/2026-03-27-qauthority-governance-design.md`
 > **Branch:** `governance-planning`
 
 ## Dependency Graph

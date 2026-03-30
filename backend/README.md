@@ -1,6 +1,6 @@
-# Backend - TestTool API
+# Backend - QAuthority API
 
-Fastify-based REST API for TestTool, built with TypeScript and Prisma ORM.
+Fastify-based REST API for QAuthority, built with TypeScript and Prisma ORM.
 
 ## Stack
 
@@ -59,15 +59,15 @@ The API will be available at `http://localhost:3001`.
 ```bash
 # Build image
 cd ..
-podman build -t testtool-backend:latest backend/
+podman build -t qauthority-api:latest backend/
 
 # Run container
 podman run -d \
-  --name testtool-backend \
-  --network testtool-internal \
+  --name qauthority-api \
+  --network qauthority-internal \
   -p 3001:3001 \
   --env-file .env.podman \
-  testtool-backend:latest
+  qauthority-api:latest
 ```
 
 ### After Code Changes
@@ -75,14 +75,14 @@ podman run -d \
 Rebuild and restart:
 
 ```bash
-podman rm -f testtool-backend
-podman build -t testtool-backend:latest backend/
+podman rm -f qauthority-api
+podman build -t qauthority-api:latest backend/
 podman run -d \
-  --name testtool-backend \
-  --network testtool-internal \
+  --name qauthority-api \
+  --network qauthority-internal \
   -p 3001:3001 \
   --env-file .env.podman \
-  testtool-backend:latest
+  qauthority-api:latest
 ```
 
 The container automatically runs migrations and seed on first boot.
@@ -198,20 +198,20 @@ npm run test:watch
 ### Build Image
 
 ```bash
-docker build -t testtool-backend:latest backend/
+docker build -t qauthority-api:latest backend/
 # or
-podman build -t testtool-backend:latest backend/
+podman build -t qauthority-api:latest backend/
 ```
 
 ### Run Container
 
 ```bash
 docker run -d \
-  --name testtool-backend \
-  --network testtool-network \
+  --name qauthority-api \
+  --network qauthority-network \
   -p 3001:3001 \
   --env-file .env \
-  testtool-backend:latest
+  qauthority-api:latest
 ```
 
 For full-stack deployment, see the [root README](../README.md).
