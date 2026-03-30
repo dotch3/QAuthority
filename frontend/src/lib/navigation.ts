@@ -55,12 +55,12 @@ export interface NavSection {
 }
 
 export const MODULE_LABELS: Record<ModuleId, string> = {
-  "test-management": "Test Command",
-  governance: "QA Governance",
-  reports: "Reports",
-  integrations: "AI & Integrations",
-  "users-groups": "Users & Groups",
-  admin: "Admin",
+  "test-management": "nav.moduleTestManagement",
+  governance: "nav.moduleGovernance",
+  reports: "nav.moduleReports",
+  integrations: "nav.moduleIntegrations",
+  "users-groups": "nav.moduleUsersGroups",
+  admin: "nav.moduleAdmin",
 }
 
 // Maps each module to the ModuleType permission key that gates access to it.
@@ -113,9 +113,9 @@ export const sidebarNavigation: NavSection[] = [
     requiredPermission: "REPORTING",
     items: [
       { titleKey: "nav.reportTemplates", href: "/reports/templates", icon: FileText, iconColor: "text-icon-blue" },
-      { titleKey: "nav.generateReport", href: "/reports/generate", icon: ScrollText, iconColor: "text-icon-purple" },
+      { titleKey: "nav.generateReport", href: "/reports/templates", icon: ScrollText, iconColor: "text-icon-purple" },
       { titleKey: "nav.reportHistory", href: "/reports/history", icon: ClipboardCheck, iconColor: "text-icon-green" },
-      { titleKey: "nav.exportCenter", href: "/reports/export", icon: Download, iconColor: "text-icon-orange" },
+      { titleKey: "nav.exportCenter", href: "/reports/coverage", icon: Download, iconColor: "text-icon-orange" },
     ],
   },
   {

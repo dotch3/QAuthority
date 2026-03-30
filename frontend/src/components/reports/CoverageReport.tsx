@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { api } from "@/lib/api"
 import { useProject } from "@/contexts/ProjectContext"
+import { useTranslations } from "next-intl"
 
 interface SuiteCoverage {
   id: string
@@ -32,6 +33,7 @@ interface PlanCoverage {
 
 export function CoverageReport() {
   const { selectedProject } = useProject()
+  const t = useTranslations('reports')
   const [isLoading, setIsLoading] = useState(true)
   const [suiteCoverage, setSuiteCoverage] = useState<SuiteCoverage[]>([])
   const [planCoverage, setPlanCoverage] = useState<PlanCoverage[]>([])
@@ -139,9 +141,9 @@ export function CoverageReport() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold">Test Coverage</h2>
+        <h2 className="text-lg font-semibold">{t('testCoverage')}</h2>
         <p className="text-sm text-muted-foreground">
-          Track which test cases have been executed
+          {t('testCoverageDesc')}
         </p>
       </div>
 
@@ -153,7 +155,7 @@ export function CoverageReport() {
             </div>
             <div>
               <p className="text-2xl font-bold">{overallCoverage}%</p>
-              <p className="text-sm text-muted-foreground">Overall Coverage</p>
+              <p className="text-sm text-muted-foreground">{t('overallCoverage')}</p>
             </div>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -171,7 +173,7 @@ export function CoverageReport() {
             </div>
             <div>
               <p className="text-2xl font-bold">{coveredCases}</p>
-              <p className="text-sm text-muted-foreground">Cases Executed</p>
+              <p className="text-sm text-muted-foreground">{t('casesExecuted')}</p>
             </div>
           </div>
         </div>
@@ -183,7 +185,7 @@ export function CoverageReport() {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalCases}</p>
-              <p className="text-sm text-muted-foreground">Total Cases</p>
+              <p className="text-sm text-muted-foreground">{t('totalCases')}</p>
             </div>
           </div>
         </div>
@@ -191,10 +193,10 @@ export function CoverageReport() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="font-semibold mb-4">Coverage by Test Plan</h3>
+          <h3 className="font-semibold mb-4">{t('coverageByPlan')}</h3>
           <div className="space-y-4">
             {planCoverage.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No test plans found</p>
+              <p className="text-sm text-muted-foreground">{t('noSuites')}</p>
             ) : (
               planCoverage.map((plan) => (
                 <div key={plan.id}>
@@ -217,10 +219,10 @@ export function CoverageReport() {
         </div>
 
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="font-semibold mb-4">Suite Details</h3>
+          <h3 className="font-semibold mb-4">{t('suiteDetails')}</h3>
           <div className="max-h-64 overflow-y-auto space-y-2">
             {suiteCoverage.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No suites found</p>
+              <p className="text-sm text-muted-foreground">{t('noSuites')}</p>
             ) : (
               suiteCoverage.map((suite) => (
                 <button
@@ -235,10 +237,10 @@ export function CoverageReport() {
                     <span className="text-xs text-muted-foreground">{suite.testPlanName}</span>
                   </div>
                   <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                    <span>Total: {suite.totalCases}</span>
-                    <span>Executed: {suite.executedCases}</span>
-                    <span className="text-green-600">Pass: {suite.passedCases}</span>
-                    <span className="text-red-600">Fail: {suite.failedCases}</span>
+                    <span>{t('total')}: {suite.totalCases}</span>
+                    <span>{t('executed')}: {suite.executedCases}</span>
+                    <span className="text-green-600">{t('pass')}: {suite.passedCases}</span>
+                    <span className="text-red-600">{t('fail')}: {suite.failedCases}</span>
                   </div>
                 </button>
               ))

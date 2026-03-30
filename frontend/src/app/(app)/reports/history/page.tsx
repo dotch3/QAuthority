@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
 import { Clock, Download, RefreshCw, FileText, CheckCircle, XCircle, Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 const STATUS_CONFIG: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: any; label: string }> = {
   PENDING: { variant: "secondary", icon: Clock, label: "Pending" },
@@ -28,6 +29,7 @@ interface ReportJob {
 }
 
 export default function ReportHistoryPage() {
+  const t = useTranslations('reports')
   const [jobs, setJobs] = useState<ReportJob[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [downloading, setDownloading] = useState<string | null>(null)
@@ -105,23 +107,23 @@ export default function ReportHistoryPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <FileText className="h-6 w-6" />
-            Report History
+            {t('history')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            View and download generated reports
+            {t('historyDesc')}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchJobs}>
           <RefreshCw className="h-4 w-4 mr-1" />
-          Refresh
+          {t('refresh')}
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground">Loading...</div>
+        <div className="text-center py-8 text-muted-foreground">{t('loading')}</div>
       ) : jobs.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          No reports generated yet. Create a template and generate a report to see it here.
+          {t('noReports')}
         </div>
       ) : (
         <div className="space-y-2">
@@ -133,7 +135,7 @@ export default function ReportHistoryPage() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{job.template?.name ?? "Unknown Template"}</h3>
+                      <h3 className="font-medium">{job.template?.name ?? t('unknownTemplate')}</h3>
                       <Badge variant="outline">{job.format}</Badge>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -162,7 +164,7 @@ export default function ReportHistoryPage() {
                         onClick={() => downloadReport(job.id)}
                       >
                         <Download className="h-4 w-4 mr-1" />
-                        {downloading === job.id ? "Downloading..." : "Download"}
+                        {downloading === job.id ? t('downloading') : t('download')}
                       </Button>
                     )}
                   </div>

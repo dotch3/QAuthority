@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { api } from "@/lib/api"
 import { useProject } from "@/contexts/ProjectContext"
+import { useTranslations } from "next-intl"
 
 interface ExecutionStats {
   total: number
@@ -33,6 +34,7 @@ interface PlanStats {
 
 export function ReportsDashboard() {
   const { selectedProject } = useProject()
+  const t = useTranslations('reports')
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState<ExecutionStats>({ total: 0, passed: 0, failed: 0, blocked: 0, notRun: 0 })
   const [planStats, setPlanStats] = useState<PlanStats[]>([])
@@ -126,17 +128,17 @@ export function ReportsDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Test Activity</h2>
-          <p className="text-sm text-muted-foreground">Overview of test executions</p>
+          <h2 className="text-lg font-semibold">{t('testActivity')}</h2>
+          <p className="text-sm text-muted-foreground">{t('testActivityDesc')}</p>
         </div>
         <select
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value)}
           className="h-9 px-3 rounded-md border border-input bg-background text-sm"
         >
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="90d">Last 90 days</option>
+          <option value="7d">{t('last7Days')}</option>
+          <option value="30d">{t('last30Days')}</option>
+          <option value="90d">{t('last90Days')}</option>
         </select>
       </div>
 
@@ -148,7 +150,7 @@ export function ReportsDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.passed}</p>
-              <p className="text-sm text-muted-foreground">Passed</p>
+              <p className="text-sm text-muted-foreground">{t('passed')}</p>
             </div>
           </div>
         </div>
@@ -159,7 +161,7 @@ export function ReportsDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.failed}</p>
-              <p className="text-sm text-muted-foreground">Failed</p>
+              <p className="text-sm text-muted-foreground">{t('failed')}</p>
             </div>
           </div>
         </div>
@@ -170,7 +172,7 @@ export function ReportsDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.blocked}</p>
-              <p className="text-sm text-muted-foreground">Blocked</p>
+              <p className="text-sm text-muted-foreground">{t('blocked')}</p>
             </div>
           </div>
         </div>
@@ -181,7 +183,7 @@ export function ReportsDashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{passRate}%</p>
-              <p className="text-sm text-muted-foreground">Pass Rate</p>
+              <p className="text-sm text-muted-foreground">{t('passRate')}</p>
             </div>
           </div>
         </div>
@@ -189,10 +191,10 @@ export function ReportsDashboard() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="font-semibold mb-4">Pass Rate by Plan</h3>
+          <h3 className="font-semibold mb-4">{t('passRateByPlan')}</h3>
           <div className="space-y-4">
             {planStats.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No test plans found</p>
+              <p className="text-sm text-muted-foreground">{t('noTestPlans')}</p>
             ) : (
               planStats.map((plan) => (
                 <div key={plan.id}>
@@ -215,30 +217,30 @@ export function ReportsDashboard() {
         </div>
 
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="font-semibold mb-4">Execution Summary</h3>
+          <h3 className="font-semibold mb-4">{t('executionSummary')}</h3>
           <div className="space-y-3">
             {totalTests === 0 ? (
-              <p className="text-sm text-muted-foreground">No executions recorded</p>
+              <p className="text-sm text-muted-foreground">{t('noExecutions')}</p>
             ) : (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Total Executions</span>
+                  <span className="text-sm">{t('totalExecutions')}</span>
                   <span className="font-medium">{totalTests}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-green-600">Passed</span>
+                  <span className="text-sm text-green-600">{t('passed')}</span>
                   <span className="font-medium text-green-600">{stats.passed}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-red-600">Failed</span>
+                  <span className="text-sm text-red-600">{t('failed')}</span>
                   <span className="font-medium text-red-600">{stats.failed}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-yellow-600">Blocked</span>
+                  <span className="text-sm text-yellow-600">{t('blocked')}</span>
                   <span className="font-medium text-yellow-600">{stats.blocked}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Not Run</span>
+                  <span className="text-sm text-gray-600">{t('notRun')}</span>
                   <span className="font-medium text-gray-600">{stats.notRun}</span>
                 </div>
               </>

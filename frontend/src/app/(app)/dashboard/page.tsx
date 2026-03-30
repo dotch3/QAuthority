@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner, LoadingPage } from "@/components/ui/loading"
+import { useTranslations } from "next-intl"
 import { useProject } from "@/contexts/ProjectContext"
 import { api } from "@/lib/api"
 
@@ -56,6 +57,7 @@ interface RecentExecution {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard')
   const { selectedProject } = useProject()
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -126,7 +128,7 @@ export default function DashboardPage() {
         status: e.status?.value || e.statusId || "not_run",
         passedCount: e.passedCount || 0,
         failedCount: e.failedCount || 0,
-        executedAt: formatRelativeTime(new Date(e.executedAt)),
+        executedAt: formatRelativeTime(new Date(e.executedAt), t),
       })))
     } catch (err) {
       console.error("Failed to load dashboard:", err)
@@ -144,9 +146,9 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Select a project to view dashboard
+            {t('selectProject')}
           </p>
         </div>
         <div className="flex items-center justify-center h-64">
@@ -163,9 +165,9 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Overview of your test management activities
+            {t('overview')}
           </p>
         </div>
         <div className="flex items-center justify-center h-64">
@@ -173,7 +175,7 @@ export default function DashboardPage() {
             <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
             <p>{error}</p>
             <Button onClick={loadDashboard} className="mt-4">
-              Retry
+              {t('retry')}
             </Button>
           </div>
         </div>
@@ -185,9 +187,9 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Overview of your test management activities
+            {t('overview')}
           </p>
         </div>
         <LoadingPage text="Loading dashboard..." />
@@ -198,15 +200,15 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Overview of your test management activities
+          {t('overview')}
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Test Plans"
+          title={t('testPlans')}
           value={stats?.testPlans}
           isLoading={isLoading}
           icon={ClipboardList}
@@ -215,7 +217,7 @@ export default function DashboardPage() {
           color="blue"
         />
         <StatCard
-          title="Test Cases"
+          title={t('testCases')}
           value={stats?.testCases}
           isLoading={isLoading}
           icon={TestTubes}
@@ -224,7 +226,7 @@ export default function DashboardPage() {
           color="purple"
         />
         <StatCard
-          title="Executions"
+          title={t('executions')}
           value={stats?.executionsThisWeek}
           isLoading={isLoading}
           icon={PlayCircle}
@@ -233,7 +235,7 @@ export default function DashboardPage() {
           color="green"
         />
         <StatCard
-          title="Open Bugs"
+          title={t('openDefects')}
           value={stats?.openBugs}
           isLoading={isLoading}
           icon={Bug}
@@ -275,17 +277,17 @@ export default function DashboardPage() {
   )
 }
 
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: Date, t: (key: string) => string): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return "Just now"
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMins < 1) return t('justNow')
+  if (diffMins < 60) return `${diffMins}m ${t('ago')}`
+  if (diffHours < 24) return `${diffHours}h ${t('ago')}`
+  if (diffDays < 7) return `${diffDays}d ${t('ago')}`
   return date.toLocaleDateString()
 }
 
@@ -344,6 +346,7 @@ function RecentExecutionsCard({
   executions: RecentExecution[]
   isLoading: boolean
 }) {
+  const t = useTranslations('dashboard')
   const statusColors: Record<string, string> = {
     pass: "bg-green-500/10 text-green-600 border-green-500/20",
     fail: "bg-red-500/10 text-red-600 border-red-500/20",
@@ -362,11 +365,11 @@ function RecentExecutionsCard({
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      pass: "Passed",
-      fail: "Failed",
-      blocked: "Blocked",
-      not_run: "Not Run",
-      skipped: "Skipped",
+      pass: t('passed'),
+      fail: t('failed'),
+      blocked: t('blocked'),
+      not_run: t('notRun'),
+      skipped: t('skipped'),
     }
     return labels[status] || status
   }
@@ -374,9 +377,9 @@ function RecentExecutionsCard({
   return (
     <div className="rounded-lg border bg-card p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold">Recent Executions</h2>
+        <h2 className="font-semibold">{t('recentExecutions')}</h2>
         <Link href="/executions" className="text-sm text-primary hover:underline flex items-center gap-1">
-          View all <ArrowRight className="h-3 w-3" />
+          {t('viewAll')} <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
       <div className="space-y-3">
@@ -393,7 +396,7 @@ function RecentExecutionsCard({
         ) : executions.length === 0 ? (
           <div className="text-center py-8">
             <PlayCircle className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No recent executions</p>
+            <p className="text-sm text-muted-foreground">{t('noRecentExecutions')}</p>
           </div>
         ) : (
           executions.map((execution) => {
@@ -436,6 +439,7 @@ function ExecutionStatusCard({
   stats: ExecutionStats | null
   isLoading: boolean
 }) {
+  const t = useTranslations('dashboard')
   const total = stats?.total || 0
   const passed = stats?.passed || 0
   const failed = stats?.failed || 0
@@ -446,7 +450,7 @@ function ExecutionStatusCard({
   return (
     <div className="rounded-lg border bg-card p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold">Overall Status</h2>
+        <h2 className="font-semibold">{t('overallStatus')}</h2>
         <TrendingUp className="h-4 w-4 text-muted-foreground" />
       </div>
 
@@ -458,7 +462,7 @@ function ExecutionStatusCard({
       ) : total === 0 ? (
         <div className="text-center py-8">
           <Activity className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">No executions yet</p>
+          <p className="text-sm text-muted-foreground">{t('noExecutionsYet')}</p>
         </div>
       ) : (
         <>
@@ -472,7 +476,7 @@ function ExecutionStatusCard({
               <div className="flex items-center justify-between text-sm mb-1">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <span>Passed</span>
+                  <span>{t('passed')}</span>
                 </div>
                 <span className="font-medium">{passed}</span>
               </div>
@@ -488,7 +492,7 @@ function ExecutionStatusCard({
               <div className="flex items-center justify-between text-sm mb-1">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-red-600" />
-                  <span>Failed</span>
+                  <span>{t('failed')}</span>
                 </div>
                 <span className="font-medium">{failed}</span>
               </div>
@@ -504,7 +508,7 @@ function ExecutionStatusCard({
               <div className="flex items-center justify-between text-sm mb-1">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-orange-600" />
-                  <span>Blocked</span>
+                  <span>{t('blocked')}</span>
                 </div>
                 <span className="font-medium">{blocked}</span>
               </div>
@@ -520,7 +524,7 @@ function ExecutionStatusCard({
               <div className="flex items-center justify-between text-sm mb-1">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-600" />
-                  <span>Not Run</span>
+                  <span>{t('notRun')}</span>
                 </div>
                 <span className="font-medium">{notRun}</span>
               </div>

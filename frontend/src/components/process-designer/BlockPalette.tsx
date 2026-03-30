@@ -1,5 +1,7 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+
 const BLOCK_TYPES = [
   { type: 'BRAINSTORMING', label: 'Brainstorming', color: 'bg-purple-100 border-purple-400' },
   { type: 'RISK_ANALYSIS', label: 'Risk Analysis', color: 'bg-red-100 border-red-400' },
@@ -14,10 +16,12 @@ const BLOCK_TYPES = [
 ]
 
 export function BlockPalette({ onAdd }: { onAdd: (type: string, label: string) => void }) {
+  const t = useTranslations('governance')
+
   return (
     <div className="w-48 border-r p-3 space-y-1 overflow-y-auto bg-background">
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-        Blocks
+        {t('blocks')}
       </p>
       {BLOCK_TYPES.map(b => (
         <button

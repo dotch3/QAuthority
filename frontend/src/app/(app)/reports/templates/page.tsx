@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 import { FileText, Plus, RefreshCw, Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 const FORMAT_OPTIONS = [
   { value: "PDF", label: "PDF" },
@@ -40,6 +41,8 @@ interface GenerationState {
 
 export default function ReportTemplatesPage() {
   const { selectedProject } = useProject()
+  const t = useTranslations('reports')
+  const tCommon = useTranslations('common')
   const [templates, setTemplates] = useState<ReportTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [generating, setGenerating] = useState<GenerationState | null>(null)
@@ -115,30 +118,30 @@ export default function ReportTemplatesPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <FileText className="h-6 w-6" />
-            Report Templates
+            {t('templates')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Create and manage report templates for your project
+            {t('templatesDesc')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchTemplates}>
             <RefreshCw className="h-4 w-4 mr-1" />
-            Refresh
+            {t('refresh')}
           </Button>
           <Button size="sm" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4 mr-1" />
-            New Template
+            {t('newTemplate')}
           </Button>
         </div>
       </div>
 
       {showCreate && (
         <div className="bg-muted/50 rounded-lg p-4 space-y-4">
-          <h3 className="font-medium">Create New Template</h3>
+          <h3 className="font-medium">{t('createTemplate')}</h3>
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <label className="text-sm font-medium">Name</label>
+              <label className="text-sm font-medium">{t('name')}</label>
               <input
                 type="text"
                 className="w-full mt-1 px-3 py-2 rounded-md border bg-background"
@@ -148,7 +151,7 @@ export default function ReportTemplatesPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Type</label>
+              <label className="text-sm font-medium">{t('type')}</label>
               <select
                 className="w-full mt-1 px-3 py-2 rounded-md border bg-background"
                 value={newTemplate.type}
@@ -162,28 +165,28 @@ export default function ReportTemplatesPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium">Scope</label>
+              <label className="text-sm font-medium">{t('scope')}</label>
               <select
                 className="w-full mt-1 px-3 py-2 rounded-md border bg-background"
                 value={newTemplate.scope}
                 onChange={(e) => setNewTemplate({ ...newTemplate, scope: e.target.value })}
               >
-                <option value="PROJECT">Project</option>
-                <option value="ORGANIZATION">Organization</option>
+                <option value="PROJECT">{t('scopeProject')}</option>
+                <option value="ORGANIZATION">{t('scopeOrganization')}</option>
               </select>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleCreateTemplate}>Create</Button>
+            <Button onClick={handleCreateTemplate}>{t('create')}</Button>
             <Button variant="outline" onClick={() => setShowCreate(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </div>
       )}
 
       {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground">Loading...</div>
+        <div className="text-center py-8 text-muted-foreground">{t('loading')}</div>
       ) : templates.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           No templates yet. Create one to get started.

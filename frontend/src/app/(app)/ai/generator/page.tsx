@@ -6,6 +6,7 @@ import { GeneratedCodeViewer } from '@/components/ai/GeneratedCodeViewer'
 import { api } from '@/lib/api'
 import { toast } from 'sonner'
 import { Cpu, Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const FRAMEWORKS = ['PLAYWRIGHT', 'CYPRESS', 'JEST', 'SELENIUM']
 
@@ -16,6 +17,7 @@ interface TestCase {
 
 export default function AIGeneratorPage() {
   const { selectedProject } = useProject()
+  const t = useTranslations('ai')
   const [testCases, setTestCases] = useState<TestCase[]>([])
   const [selectedCase, setSelectedCase] = useState<string>('')
   const [framework, setFramework] = useState<string>('PLAYWRIGHT')
@@ -58,8 +60,8 @@ export default function AIGeneratorPage() {
   if (!selectedProject) {
     return (
       <div className="p-6 max-w-4xl">
-        <h1 className="text-2xl font-bold mb-4">AI Code Generator</h1>
-        <p className="text-muted-foreground">Select a project to generate automation code.</p>
+        <h1 className="text-2xl font-bold mb-4">{t('generator')}</h1>
+        <p className="text-muted-foreground">{t('selectProject')}</p>
       </div>
     )
   }
@@ -69,30 +71,30 @@ export default function AIGeneratorPage() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Cpu className="h-6 w-6" />
-          AI Code Generator
+          {t('generator')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Select a test case and generate automation code using the Page Object Model pattern.
+          {t('generatorDesc')}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Test Case</label>
+          <label className="text-sm font-medium">{t('testCase')}</label>
           <select
             className="w-full px-3 py-2 rounded-md border bg-background"
             value={selectedCase}
             onChange={(e) => setSelectedCase(e.target.value)}
             disabled={loadingCases}
           >
-            <option value="">Select a test case...</option>
+            <option value="">{t('selectTestCase')}</option>
             {testCases.map(tc => (
               <option key={tc.id} value={tc.id}>{tc.title}</option>
             ))}
           </select>
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Framework</label>
+          <label className="text-sm font-medium">{t('framework')}</label>
           <select
             className="w-full px-3 py-2 rounded-md border bg-background"
             value={framework}
@@ -109,10 +111,10 @@ export default function AIGeneratorPage() {
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            Generating...
+            {t('generating')}
           </>
         ) : (
-          'Generate Code'
+          t('generate')
         )}
       </Button>
 

@@ -1,4 +1,5 @@
 'use client'
+import { useTranslations } from "next-intl"
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ReferenceLine, ResponsiveContainer
@@ -21,11 +22,12 @@ interface Props {
 }
 
 export function PBCChart({ data, title, unit = '' }: Props) {
+  const t = useTranslations('governance')
   if (!data.pbc || data.history.length < 2) {
     return (
       <div className="border rounded p-4">
         <p className="text-sm font-medium mb-2">{title}</p>
-        <p className="text-xs text-muted-foreground">Not enough data for PBC analysis (need ≥ 2 data points)</p>
+        <p className="text-xs text-muted-foreground">{t('notEnoughDataPBC')}</p>
       </div>
     )
   }

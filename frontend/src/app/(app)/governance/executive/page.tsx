@@ -1,9 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useTranslations } from "next-intl"
 import { TeamHealthCard } from '@/components/governance/TeamHealthCard'
 import { api } from '@/lib/api'
 
 export default function ExecutiveDashboardPage() {
+  const t = useTranslations('governance')
   const [orgMetrics, setOrgMetrics] = useState<any>(null)
   const [teamHealth, setTeamHealth] = useState<any[]>([])
   const [orgOKRs, setOrgOKRs] = useState<any[]>([])
@@ -26,19 +28,19 @@ export default function ExecutiveDashboardPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-6xl">
-      <h1 className="text-2xl font-bold">Executive Dashboard</h1>
+      <h1 className="text-2xl font-bold">{t('executiveDashboard')}</h1>
       <p className="text-muted-foreground text-sm">
-        Org-wide view across {orgMetrics?.projectCount ?? '—'} projects
+        {t('executiveDashboardDesc', { count: orgMetrics?.projectCount ?? '—' })}
       </p>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">DORA Metrics (30-day avg)</h2>
+        <h2 className="text-lg font-semibold mb-3">{t('doraMetrics')}</h2>
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: 'Deploy Frequency', value: fmt('DORA_DEPLOY_FREQUENCY'), unit: '/week' },
-            { label: 'Lead Time', value: fmt('DORA_LEAD_TIME_HOURS'), unit: 'hrs' },
-            { label: 'Change Fail Rate', value: fmt('DORA_CHANGE_FAIL_RATE'), unit: '%' },
-            { label: 'MTTR', value: fmt('DORA_MTTR_HOURS'), unit: 'hrs' },
+            { label: t('deployFrequency'), value: fmt('DORA_DEPLOY_FREQUENCY'), unit: '/week' },
+            { label: t('leadTime'), value: fmt('DORA_LEAD_TIME_HOURS'), unit: 'hrs' },
+            { label: t('changeFailRate'), value: fmt('DORA_CHANGE_FAIL_RATE'), unit: '%' },
+            { label: t('mttr'), value: fmt('DORA_MTTR_HOURS'), unit: 'hrs' },
           ].map(item => (
             <div key={item.label} className="border rounded p-4 text-center">
               <p className="text-xs text-muted-foreground">{item.label}</p>
@@ -49,18 +51,18 @@ export default function ExecutiveDashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">Team Health Scorecards</h2>
+        <h2 className="text-lg font-semibold mb-3">{t('teamHealth')}</h2>
         <div className="border rounded p-4 space-y-1">
           {teamHealth
             .sort((a, b) => b.score - a.score)
-            .map(t => (
-              <TeamHealthCard key={t.projectId} projectName={t.projectName} score={t.score} />
+            .map(item => (
+              <TeamHealthCard key={item.projectId} projectName={item.projectName} score={item.score} />
             ))}
         </div>
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">Organization OKRs</h2>
+        <h2 className="text-lg font-semibold mb-3">{t('orgOkrs')}</h2>
         <div className="space-y-3">
           {orgOKRs.map((okr: any) => {
             const progress = okr.keyResults?.length > 0
@@ -77,7 +79,7 @@ export default function ExecutiveDashboardPage() {
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{progress.toFixed(0)}% complete</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('progressComplete', { progress: progress.toFixed(0) })}</p>
               </div>
             )
           })}

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { ClipboardList, BarChart3, FileText, Cpu, Users, Settings } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useEffect } from "react"
@@ -22,6 +23,7 @@ export function ModuleRail() {
   const pathname = usePathname()
   const { activeModule, setActiveModule } = useSidebarState()
   const { can } = usePermissions()
+  const t = useTranslations()
 
   useEffect(() => {
     const stripped = pathname.replace(/^\/[a-z]{2}(-[A-Z]{2})?/, "")
@@ -50,13 +52,13 @@ export function ModuleRail() {
                       ? "bg-primary/20 text-primary shadow-sm"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
-                  aria-label={MODULE_LABELS[moduleId]}
+                  aria-label={t(MODULE_LABELS[moduleId])}
                 >
                   <Icon className="h-4 w-4" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" className="text-xs">
-                {MODULE_LABELS[moduleId]}
+                {t(MODULE_LABELS[moduleId])}
               </TooltipContent>
             </Tooltip>
           )

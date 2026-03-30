@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { ChevronLeft, ChevronRight, ShieldCheck, Menu, ClipboardList, BarChart3, FileText, Cpu, Users, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useSidebarState } from "@/hooks/useSidebarState"
@@ -26,6 +27,7 @@ export function ModuleSidebar() {
   const { isCollapsed, toggleCollapse, activeModule, setActiveModule } = useSidebarState()
   const [mobileOpen, setLocalMobileOpen] = useState(false)
   const { can } = usePermissions()
+  const t = useTranslations()
 
   const visibleModules = ALL_MODULES.filter(m => can(MODULE_PERMISSION_KEYS[m], "read"))
 
@@ -77,7 +79,7 @@ export function ModuleSidebar() {
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="hidden sm:block">{MODULE_LABELS[moduleId].split(' ')[0]}</span>
+                  <span className="hidden sm:block">{t(MODULE_LABELS[moduleId]).split(' ')[0]}</span>
                 </button>
               )
             })}

@@ -64,4 +64,23 @@ export async function metricsRoutes(app: FastifyInstance) {
       return reply.send(scores)
     }
   )
+
+  app.get<{ Params: { projectId: string } }>(
+    '/metrics/projects/:projectId',
+    { preHandler: [requireAuth(), requirePermission('QA_GOVERNANCE', 'read')] },
+    async (request, reply) => {
+      const metrics = await collector.getLatestForProject(request.params.projectId)
+      return reply.send(metrics)
+    }
+  )
+
+  app.get<{ Querystring: { projectId?: string } }>(
+    '/metrics/kpis',
+    { preHandler: [requireAuth(), requirePermission('QA_GOVERNANCE', 'read')] },
+    async (request, reply) => {
+      const { projectId } = request.query
+      const kpis = await aggregator.getKPIs(projectId)
+      return reply.send(kpis)
+    }
+  )
 }

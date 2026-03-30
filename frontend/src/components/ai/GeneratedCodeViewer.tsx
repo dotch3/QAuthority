@@ -1,6 +1,7 @@
 'use client'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   code: string
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function GeneratedCodeViewer({ code, framework, testCaseTitle }: Props) {
+  const t = useTranslations('ai')
   const copy = () => {
     navigator.clipboard.writeText(code)
     toast.success('Code copied to clipboard')
@@ -28,10 +30,10 @@ export function GeneratedCodeViewer({ code, framework, testCaseTitle }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">{framework} — Generated Code</span>
+        <span className="text-sm font-medium">{t('generatedCode', { framework })}</span>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={copy}>Copy</Button>
-          <Button size="sm" variant="outline" onClick={download}>Download</Button>
+          <Button size="sm" variant="outline" onClick={copy}>{t('copy')}</Button>
+          <Button size="sm" variant="outline" onClick={download}>{t('download')}</Button>
         </div>
       </div>
       <pre className="bg-muted rounded p-4 text-xs overflow-x-auto max-h-96 overflow-y-auto">

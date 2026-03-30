@@ -347,18 +347,21 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between gap-4 flex-wrap">
+      <div className="flex justify-between gap-4 flex-wrap items-center">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search charters..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-10 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-blue-500 focus:ring-blue-500/20"
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-              <X className="h-4 w-4 text-muted-foreground" />
+            <button 
+              onClick={() => setSearchQuery("")} 
+              className="absolute right-3 top-1/2 -translate-y-1/2 hover:text-slate-600 dark:hover:text-slate-300"
+            >
+              <X className="h-4 w-4 text-slate-400" />
             </button>
           )}
         </div>
@@ -368,7 +371,7 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
           onSubmit={handleCreateCharter}
           isSubmitting={isCreating}
           trigger={
-            <Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
               <Plus className="mr-2 h-4 w-4" />
               Create ET Charter
             </Button>
@@ -382,18 +385,24 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-24 w-full" />
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
         </div>
       ) : filteredCharters.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Compass className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No ET Charters</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              {searchQuery ? "No charters match your search" : "Create your first ET Charter for this suite"}
+        <Card className="border-dashed border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <CardContent className="p-12 text-center">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-950 mx-auto mb-4">
+              <Compass className="h-8 w-8 text-blue-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+              {searchQuery ? "No charters found" : "No ET Charters Yet"}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
+              {searchQuery 
+                ? "Try adjusting your search terms" 
+                : "Create your first exploratory testing charter to document your testing session"}
             </p>
             {!searchQuery && (
               <CharterDialog
@@ -401,7 +410,7 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
                 onSubmit={handleCreateCharter}
                 isSubmitting={isCreating}
                 trigger={
-                  <Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
                     <Plus className="mr-2 h-4 w-4" />
                     Create ET Charter
                   </Button>
@@ -490,68 +499,85 @@ function CharterCard({
   isDeleting,
 }: CharterCardProps) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
       <div className="p-4 cursor-pointer" onClick={onToggle}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="rounded-lg bg-primary/10 p-2 mt-0.5">
-              <Compass className="h-4 w-4 text-primary" />
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-2 mt-0.5">
+              <Compass className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium leading-tight">{charter.charter}</h3>
+              <h3 className="font-semibold leading-tight text-slate-900 dark:text-slate-100">
+                {charter.charter}
+              </h3>
               {charter.areas.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
+                <div className="flex flex-wrap gap-1 mt-2">
                   {charter.areas.slice(0, 3).map((area, i) => (
-                    <Badge key={i} variant="secondary" className="text-xs">
+                    <Badge 
+                      key={i} 
+                      variant="secondary" 
+                      className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    >
                       {area}
                     </Badge>
                   ))}
                   {charter.areas.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge 
+                      variant="secondary" 
+                      className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    >
                       +{charter.areas.length - 3}
                     </Badge>
                   )}
                 </div>
               )}
-              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4 mt-3 text-sm">
                 {charter.tester && (
-                  <span className="flex items-center gap-1">
-                    <User className="h-3 w-3" />
-                    {charter.tester.name || charter.tester.email}
+                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <User className="h-3.5 w-3.5" />
+                    <span className="truncate max-w-[120px]">{charter.tester.name || charter.tester.email}</span>
                   </span>
                 )}
                 {charter.startDate && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
+                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <Calendar className="h-3.5 w-3.5" />
                     {new Date(charter.startDate).toLocaleDateString()}
                   </span>
                 )}
                 {charter.duration && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
+                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <Clock className="h-3.5 w-3.5" />
                     {durationOptions.find((d) => d.value === charter.duration)?.label.split(" ")[0] || charter.duration}
                   </span>
                 )}
                 {charter.bugs.length > 0 && (
-                  <span className="flex items-center gap-1 text-orange-600">
-                    <Bug className="h-3 w-3" />
+                  <span className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 font-medium">
+                    <Bug className="h-3.5 w-3.5" />
                     {charter.bugs.length} bugs
                   </span>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="h-8">
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit() }}>
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit
@@ -568,7 +594,7 @@ function CharterCard({
                 <DropdownMenuItem
                   onClick={(e) => { e.stopPropagation(); onDelete() }}
                   disabled={isDeleting}
-                  className="text-destructive focus:text-destructive"
+                  className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   {isDeleting ? "Deleting..." : "Delete"}
@@ -580,20 +606,25 @@ function CharterCard({
       </div>
 
       {isExpanded && (
-        <div className="border-t p-4 bg-muted/30">
-          <div className="grid gap-4">
+        <div className="border-t border-slate-200 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="grid gap-5">
             {charter.testNotes.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <FileText className="h-4 w-4 text-blue-500" />
                   Test Notes
                 </h4>
-                <div className="space-y-2 pl-6">
+                <div className="space-y-3 pl-5">
                   {charter.testNotes.map((note, i) => (
-                    <div key={i}>
-                      <p className="text-sm font-medium">{i + 1}. {note.action}</p>
+                    <div key={i} className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs mr-2">
+                          {i + 1}
+                        </span>
+                        {note.action}
+                      </p>
                       {note.bullets.length > 0 && (
-                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                        <ul className="list-disc list-inside text-sm text-slate-500 dark:text-slate-400 mt-2 ml-7">
                           {note.bullets.map((bullet, j) => (
                             <li key={j}>{bullet}</li>
                           ))}
@@ -607,16 +638,21 @@ function CharterCard({
 
             {charter.opportunities.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4" />
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
                   Opportunities
                 </h4>
-                <div className="space-y-2 pl-6">
+                <div className="space-y-3 pl-5">
                   {charter.opportunities.map((opp, i) => (
-                    <div key={i}>
-                      <p className="text-sm font-medium">{i + 1}. {opp.action}</p>
+                    <div key={i} className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400 text-xs mr-2">
+                          {i + 1}
+                        </span>
+                        {opp.action}
+                      </p>
                       {opp.bullets.length > 0 && (
-                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                        <ul className="list-disc list-inside text-sm text-slate-500 dark:text-slate-400 mt-2 ml-7">
                           {opp.bullets.map((bullet, j) => (
                             <li key={j}>{bullet}</li>
                           ))}
@@ -630,18 +666,23 @@ function CharterCard({
 
             {charter.bugs.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-orange-600">
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-orange-600 dark:text-orange-400">
                   <Bug className="h-4 w-4" />
-                  Bugs Found
+                  Bugs Found ({charter.bugs.length})
                 </h4>
-                <div className="space-y-3 pl-6">
+                <div className="space-y-3 pl-5">
                   {charter.bugs.map((bug, i) => (
-                    <Card key={i} className="p-3">
-                      <p className="text-sm font-medium">{i + 1}. {bug.name}</p>
+                    <Card key={i} className="p-4 border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/30">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-200 dark:bg-orange-800 text-orange-700 dark:text-orange-300 text-xs mr-2">
+                          {i + 1}
+                        </span>
+                        {bug.name}
+                      </p>
                       {bug.steps.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs font-medium text-muted-foreground">Steps to Reproduce:</p>
-                          <ol className="list-decimal list-inside text-sm text-muted-foreground mt-1">
+                        <div className="mt-3 ml-7">
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Steps to Reproduce</p>
+                          <ol className="list-decimal list-inside text-sm text-slate-600 dark:text-slate-400 mt-1">
                             {bug.steps.map((step, j) => (
                               <li key={j}>{step}</li>
                             ))}
@@ -649,15 +690,15 @@ function CharterCard({
                         </div>
                       )}
                       {bug.expected && (
-                        <p className="text-xs mt-2">
-                          <span className="font-medium text-muted-foreground">Expected: </span>
-                          <span className="text-muted-foreground">{bug.expected}</span>
+                        <p className="text-xs mt-3 ml-7">
+                          <span className="font-medium text-emerald-600 dark:text-emerald-400">Expected: </span>
+                          <span className="text-slate-600 dark:text-slate-400">{bug.expected}</span>
                         </p>
                       )}
                       {bug.actual && (
-                        <p className="text-xs mt-1">
-                          <span className="font-medium text-destructive">Actual: </span>
-                          <span className="text-muted-foreground">{bug.actual}</span>
+                        <p className="text-xs mt-1 ml-7">
+                          <span className="font-medium text-red-600 dark:text-red-400">Actual: </span>
+                          <span className="text-slate-600 dark:text-slate-400">{bug.actual}</span>
                         </p>
                       )}
                     </Card>
@@ -668,42 +709,46 @@ function CharterCard({
 
             {charter.issues.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
                   Issues
                 </h4>
-                <div className="space-y-1 pl-6">
+                <div className="space-y-2 pl-5">
                   {charter.issues.map((issue, i) => (
-                    <p key={i} className="text-sm">
-                      {i + 1}. {issue.description}
-                    </p>
+                    <div 
+                      key={i} 
+                      className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 bg-red-50 dark:bg-red-950/30 rounded-lg p-3 border border-red-200 dark:border-red-900/50"
+                    >
+                      <span className="font-medium text-red-600 dark:text-red-400">{i + 1}.</span>
+                      <span>{issue.description}</span>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
             {charter.testDesignPercentage !== undefined && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2 border-t">
-                <div>
-                  <p className="text-xs text-muted-foreground">Test Design</p>
-                  <p className="text-sm font-medium">{charter.testDesignPercentage}%</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Test Design</p>
+                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mt-1">{charter.testDesignPercentage}%</p>
                 </div>
                 {charter.bugInvestigationPercentage !== undefined && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Bug Investigation</p>
-                    <p className="text-sm font-medium">{charter.bugInvestigationPercentage}%</p>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bug Investigation</p>
+                    <p className="text-lg font-bold text-orange-600 dark:text-orange-400 mt-1">{charter.bugInvestigationPercentage}%</p>
                   </div>
                 )}
                 {charter.sessionSetupPercentage !== undefined && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Session Setup</p>
-                    <p className="text-sm font-medium">{charter.sessionSetupPercentage}%</p>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Session Setup</p>
+                    <p className="text-lg font-bold text-purple-600 dark:text-purple-400 mt-1">{charter.sessionSetupPercentage}%</p>
                   </div>
                 )}
                 {charter.charterVsOpportunity !== undefined && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Charter vs Opportunity</p>
-                    <p className="text-sm font-medium">{charter.charterVsOpportunity}%</p>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Charter vs Opportunity</p>
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">{charter.charterVsOpportunity}%</p>
                   </div>
                 )}
               </div>

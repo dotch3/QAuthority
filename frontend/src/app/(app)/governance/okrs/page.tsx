@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useTranslations } from "next-intl"
 import { useProject } from '@/contexts/ProjectContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default function OKRsPage() {
+  const t = useTranslations('governance')
   const { selectedProject } = useProject()
   const [okrs, setOkrs] = useState<any[]>([])
   const [orgOKRs, setOrgOKRs] = useState<any[]>([])
@@ -37,12 +39,12 @@ export default function OKRsPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-4xl">
-      <h1 className="text-2xl font-bold">OKRs</h1>
+      <h1 className="text-2xl font-bold">{t('okrs')}</h1>
 
       <section>
-        <h2 className="text-lg font-semibold mb-2">Organization OKRs</h2>
+        <h2 className="text-lg font-semibold mb-2">{t('orgOkrsTitle')}</h2>
         <p className="text-sm text-muted-foreground mb-3">
-          These apply across all teams. Adopt one into your project to track progress locally.
+          {t('orgOkrsDesc')}
         </p>
         <div className="space-y-2">
           {orgOKRs.map(okr => (
@@ -55,7 +57,7 @@ export default function OKRsPage() {
                 <Badge variant={STATUS_COLORS[okr.status] as any}>{okr.status}</Badge>
                 {selectedProject && (
                   <Button size="sm" variant="outline" onClick={() => adoptOKR(okr.id)}>
-                    Adopt
+                    {t('adopt')}
                   </Button>
                 )}
               </div>
@@ -66,7 +68,7 @@ export default function OKRsPage() {
 
       {selectedProject && (
         <section>
-          <h2 className="text-lg font-semibold mb-2">Project OKRs</h2>
+          <h2 className="text-lg font-semibold mb-2">{t('projectOkrs')}</h2>
           <div className="space-y-2">
             {okrs.map(okr => (
               <div key={okr.id} className="border rounded p-4">

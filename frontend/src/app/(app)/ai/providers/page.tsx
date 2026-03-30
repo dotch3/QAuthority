@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { api } from '@/lib/api'
 import { toast } from 'sonner'
 import { Settings, Plus, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface AIProvider {
   id: string
@@ -19,6 +20,7 @@ interface AIProvider {
 }
 
 export default function AIProvidersPage() {
+  const t = useTranslations('ai')
   const [providers, setProviders] = useState<AIProvider[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
@@ -89,15 +91,15 @@ export default function AIProvidersPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Settings className="h-6 w-6" />
-            AI Providers
+            {t('providers')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure AI providers for code generation
+            {t('providersDesc')}
           </p>
         </div>
         <Button onClick={() => setShowForm(s => !s)}>
           <Plus className="h-4 w-4 mr-1" />
-          Add Provider
+          {t('addProvider')}
         </Button>
       </div>
 
@@ -105,7 +107,7 @@ export default function AIProvidersPage() {
         <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Name</Label>
+              <Label>{t('name')}</Label>
               <Input
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -113,20 +115,20 @@ export default function AIProvidersPage() {
               />
             </div>
             <div>
-              <Label>Provider</Label>
+              <Label>{t('provider')}</Label>
               <select
                 className="w-full px-3 py-2 rounded-md border bg-background"
                 value={form.provider}
                 onChange={e => setForm(f => ({ ...f, provider: e.target.value }))}
               >
-                <option value="ANTHROPIC">Anthropic</option>
-                <option value="OPENAI">OpenAI</option>
-                <option value="OLLAMA">Ollama</option>
-                <option value="CUSTOM">Custom</option>
+                <option value="ANTHROPIC">{t('providerAnthropic')}</option>
+                <option value="OPENAI">{t('providerOpenAI')}</option>
+                <option value="OLLAMA">{t('providerOllama')}</option>
+                <option value="CUSTOM">{t('providerCustom')}</option>
               </select>
             </div>
             <div>
-              <Label>Model</Label>
+              <Label>{t('model')}</Label>
               <Input
                 value={form.model}
                 onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
@@ -134,7 +136,7 @@ export default function AIProvidersPage() {
               />
             </div>
             <div>
-              <Label>API Key</Label>
+              <Label>{t('apiKey')}</Label>
               <Input
                 type="password"
                 value={form.apiKey}
@@ -144,7 +146,7 @@ export default function AIProvidersPage() {
             </div>
             {(form.provider === 'OLLAMA' || form.provider === 'CUSTOM') && (
               <div className="col-span-2">
-                <Label>Base URL</Label>
+                <Label>{t('baseUrl')}</Label>
                 <Input
                   value={form.baseUrl}
                   onChange={e => setForm(f => ({ ...f, baseUrl: e.target.value }))}
@@ -161,10 +163,10 @@ export default function AIProvidersPage() {
               onChange={e => setForm(f => ({ ...f, isDefault: e.target.checked }))}
               className="rounded"
             />
-            <Label htmlFor="isDefault">Set as default provider</Label>
+            <Label htmlFor="isDefault">{t('setDefault')}</Label>
           </div>
           <Button onClick={save} disabled={loading}>
-            {loading ? 'Saving...' : 'Save Provider'}
+            {loading ? t('saving') : t('saveProvider')}
           </Button>
         </div>
       )}
@@ -172,7 +174,7 @@ export default function AIProvidersPage() {
       <div className="space-y-2">
         {providers.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            No AI providers configured. Add one to start generating code.
+            {t('noProviders')}
           </div>
         ) : (
           providers.map(p => (
