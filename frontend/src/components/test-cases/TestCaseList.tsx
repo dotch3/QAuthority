@@ -176,6 +176,7 @@ function TestCaseFormDialog({
   isSubmitting,
   error,
   suiteId,
+  projectId,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -1448,6 +1449,7 @@ export function TestCaseList({
                       Type <SortIcon field="type" />
                     </button>
                   </TableHead>
+                  <TableHead>Assignees</TableHead>
                   <TableHead className="text-center">Executions</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
@@ -1505,7 +1507,7 @@ export function TestCaseList({
                             </div>
                           ))}
                           {testCase.assignees.length > 3 && (
-                            <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs">
+                            <div key="more" className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs">
                               +{testCase.assignees.length - 3}
                             </div>
                           )}
