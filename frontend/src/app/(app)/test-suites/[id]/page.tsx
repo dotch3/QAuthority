@@ -252,19 +252,19 @@ export default function TestSuiteDetailPage() {
                       </TableCell>
                       <TableCell>
                         {caseItem.assignees.length > 0 ? (
-                          <div className="flex items-center gap-1">
-                            <div className="flex -space-x-2">
-                              {caseItem.assignees.slice(0, 3).map((assignee) => (
-                                <Avatar
-                                  key={assignee.id}
-                                  className="h-6 w-6 border-2 border-background"
-                                >
-                                  <AvatarFallback className="text-[10px]">
-                                    {(assignee.name || assignee.email).charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                              ))}
-                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="flex -space-x-2">
+                                {caseItem.assignees.slice(0, 3).map((assignee) => (
+                                  <Avatar
+                                    key={assignee.id}
+                                    className="h-6 w-6 border-2 border-background"
+                                  >
+                                    <AvatarFallback className="text-[10px]">
+                                      {(assignee.name || assignee.email || '?').charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                ))}
+                              </div>
                             {caseItem.assignees.length > 3 && (
                               <span className="text-xs text-muted-foreground ml-1">
                                 +{caseItem.assignees.length - 3}
