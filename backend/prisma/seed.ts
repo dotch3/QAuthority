@@ -4,6 +4,14 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { seedGroups } from './seed/groups'
 
+type MetricEntry = {
+  projectId: string
+  metricType: 'DORA_DEPLOY_FREQUENCY' | 'DORA_LEAD_TIME_HOURS' | 'DORA_CHANGE_FAIL_RATE' | 'DORA_MTTR_HOURS' | 'QUALITY_DEFECT_DENSITY' | 'QUALITY_ESCAPED_DEFECTS' | 'EXECUTION_PASS_RATE' | 'QUALITY_REQUIREMENT_COVERAGE' | 'EXECUTION_BURNDOWN'
+  value: number
+  recordedAt: Date
+  metadata?: object
+}
+
 const prisma = new PrismaClient()
 
 async function main() {
@@ -647,16 +655,339 @@ async function main() {
     }
   }
 
+  // ── OKRs + Key Results ────────────────────────────────────────────────────
+  const okrs = [
+    {
+      id: 'okr-q1-defect-escape',
+      title: 'Reduce production defect escape rate by 30%',
+      description: 'Implement enhanced test coverage and exploratory testing to catch defects before production',
+      quarter: 1,
+      year: 2025,
+      scope: 'ORGANIZATION' as const,
+      status: 'ON_TRACK' as const,
+      keyResults: [
+        { id: 'kr-q1-de-001', title: 'Achieve 85% critical path test coverage', targetValue: 85, currentValue: 72, unit: '%', aggregationStrategy: 'AVG' as const },
+        { id: 'kr-q1-de-002', title: 'Reduce escaped defects to fewer than 2 per release', targetValue: 2, currentValue: 3, unit: 'count', aggregationStrategy: 'SUM' as const },
+        { id: 'kr-q1-de-003', title: 'Increase exploratory testing hours by 40%', targetValue: 40, currentValue: 25, unit: '%', aggregationStrategy: 'AVG' as const },
+      ],
+    },
+    {
+      id: 'okr-q1-automation',
+      title: 'Achieve 75% test automation coverage across all projects',
+      description: 'Shift from manual to automated testing to improve execution speed and consistency',
+      quarter: 1,
+      year: 2025,
+      scope: 'ORGANIZATION' as const,
+      status: 'AT_RISK' as const,
+      keyResults: [
+        { id: 'kr-q1-aut-001', title: 'Automate 60% of regression test suite', targetValue: 60, currentValue: 45, unit: '%', aggregationStrategy: 'AVG' as const },
+        { id: 'kr-q1-aut-002', title: 'Reduce manual test execution time by 50%', targetValue: 50, currentValue: 30, unit: '%', aggregationStrategy: 'AVG' as const },
+        { id: 'kr-q1-aut-003', title: 'Achieve sub-10 minute smoke test execution', targetValue: 10, currentValue: 15, unit: 'minutes', aggregationStrategy: 'MIN' as const },
+      ],
+    },
+    {
+      id: 'okr-q1-dora',
+      title: 'Improve deployment frequency to 2x per week with 95%+ stability',
+      description: 'Enhance CI/CD pipeline to enable faster, safer deployments',
+      quarter: 1,
+      year: 2025,
+      scope: 'ORGANIZATION' as const,
+      status: 'DRAFT' as const,
+      keyResults: [
+        { id: 'kr-q1-dora-001', title: 'Increase deployment frequency to 2 deploys per week', targetValue: 2, currentValue: 0.8, unit: 'deploys/week', aggregationStrategy: 'AVG' as const },
+        { id: 'kr-q1-dora-002', title: 'Reduce lead time for changes to under 32 hours', targetValue: 32, currentValue: 45, unit: 'hours', aggregationStrategy: 'AVG' as const },
+        { id: 'kr-q1-dora-003', title: 'Keep change failure rate below 5%', targetValue: 5, currentValue: 8.2, unit: '%', aggregationStrategy: 'AVG' as const },
+      ],
+    },
+    {
+      id: 'okr-q1-webapp',
+      title: 'Achieve zero critical defect escapes for Web Application in Q1',
+      description: 'Project-level OKR adopted from org goal — focus on web app stability',
+      quarter: 1,
+      year: 2025,
+      scope: 'PROJECT' as const,
+      status: 'ON_TRACK' as const,
+      projectId: 'proj-webapp',
+      parentOkrId: 'okr-q1-defect-escape',
+      isAdopted: true,
+      keyResults: [
+        { id: 'kr-q1-wa-001', title: 'Zero critical escaped defects in production', targetValue: 0, currentValue: 1, unit: 'count', aggregationStrategy: 'SUM' as const },
+        { id: 'kr-q1-wa-002', title: 'Achieve 90% test execution pass rate', targetValue: 90, currentValue: 86, unit: '%', aggregationStrategy: 'AVG' as const },
+      ],
+    },
+  ]
+
+  for (const okr of okrs) {
+    const { keyResults, ...okrData } = okr
+    await prisma.oKR.upsert({
+      where: { id: okr.id },
+      create: {
+        ...okrData,
+        createdById: admin.id,
+      },
+      update: { title: okrData.title, status: okrData.status },
+    })
+    for (const kr of keyResults) {
+      await prisma.keyResult.upsert({
+        where: { id: kr.id },
+        create: { ...kr, okrId: okr.id },
+        update: { currentValue: kr.currentValue },
+      })
+    }
+  }
+  console.log(`✓ Seeded ${okrs.length} OKRs with key results`)
+
+  // ── MetricSnapshots — 3 months DORA + Quality ────────────────────────────
+  const metricSnapshots: MetricEntry[] = [
+    // January 2025 — Web App
+    { projectId: 'proj-webapp', metricType: 'DORA_DEPLOY_FREQUENCY', value: 0.8, recordedAt: new Date('2025-01-31'), metadata: { builds: 3, deployments: 3 } },
+    { projectId: 'proj-webapp', metricType: 'DORA_LEAD_TIME_HOURS', value: 45.5, recordedAt: new Date('2025-01-31'), metadata: { samples: 8 } },
+    { projectId: 'proj-webapp', metricType: 'DORA_CHANGE_FAIL_RATE', value: 8.2, recordedAt: new Date('2025-01-31'), metadata: { failedDeployments: 2, totalDeployments: 24 } },
+    { projectId: 'proj-webapp', metricType: 'DORA_MTTR_HOURS', value: 3.25, recordedAt: new Date('2025-01-31') },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_DEFECT_DENSITY', value: 0.38, recordedAt: new Date('2025-01-31'), metadata: { defects: 8, testCases: 21 } },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_ESCAPED_DEFECTS', value: 3, recordedAt: new Date('2025-01-31') },
+    { projectId: 'proj-webapp', metricType: 'EXECUTION_PASS_RATE', value: 78.5, recordedAt: new Date('2025-01-31'), metadata: { passed: 11, failed: 1, blocked: 1 } },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_REQUIREMENT_COVERAGE', value: 62, recordedAt: new Date('2025-01-31') },
+    // January 2025 — API
+    { projectId: 'proj-api', metricType: 'DORA_DEPLOY_FREQUENCY', value: 1.2, recordedAt: new Date('2025-01-31') },
+    { projectId: 'proj-api', metricType: 'DORA_LEAD_TIME_HOURS', value: 38.0, recordedAt: new Date('2025-01-31') },
+    { projectId: 'proj-api', metricType: 'DORA_CHANGE_FAIL_RATE', value: 6.5, recordedAt: new Date('2025-01-31') },
+    { projectId: 'proj-api', metricType: 'EXECUTION_PASS_RATE', value: 83.3, recordedAt: new Date('2025-01-31') },
+    // February 2025 — Web App
+    { projectId: 'proj-webapp', metricType: 'DORA_DEPLOY_FREQUENCY', value: 1.2, recordedAt: new Date('2025-02-28'), metadata: { builds: 5, deployments: 5 } },
+    { projectId: 'proj-webapp', metricType: 'DORA_LEAD_TIME_HOURS', value: 38.0, recordedAt: new Date('2025-02-28') },
+    { projectId: 'proj-webapp', metricType: 'DORA_CHANGE_FAIL_RATE', value: 7.1, recordedAt: new Date('2025-02-28'), metadata: { failedDeployments: 2, totalDeployments: 28 } },
+    { projectId: 'proj-webapp', metricType: 'DORA_MTTR_HOURS', value: 2.85, recordedAt: new Date('2025-02-28') },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_DEFECT_DENSITY', value: 0.33, recordedAt: new Date('2025-02-28'), metadata: { defects: 7, testCases: 21 } },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_ESCAPED_DEFECTS', value: 2, recordedAt: new Date('2025-02-28') },
+    { projectId: 'proj-webapp', metricType: 'EXECUTION_PASS_RATE', value: 82.1, recordedAt: new Date('2025-02-28'), metadata: { passed: 23, failed: 3, blocked: 2 } },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_REQUIREMENT_COVERAGE', value: 70, recordedAt: new Date('2025-02-28') },
+    // February 2025 — API
+    { projectId: 'proj-api', metricType: 'DORA_DEPLOY_FREQUENCY', value: 1.5, recordedAt: new Date('2025-02-28') },
+    { projectId: 'proj-api', metricType: 'DORA_LEAD_TIME_HOURS', value: 32.0, recordedAt: new Date('2025-02-28') },
+    { projectId: 'proj-api', metricType: 'EXECUTION_PASS_RATE', value: 85.7, recordedAt: new Date('2025-02-28') },
+    // March 2025 — Web App
+    { projectId: 'proj-webapp', metricType: 'DORA_DEPLOY_FREQUENCY', value: 1.6, recordedAt: new Date('2025-03-31'), metadata: { builds: 7, deployments: 7 } },
+    { projectId: 'proj-webapp', metricType: 'DORA_LEAD_TIME_HOURS', value: 32.0, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-webapp', metricType: 'DORA_CHANGE_FAIL_RATE', value: 5.8, recordedAt: new Date('2025-03-31'), metadata: { failedDeployments: 2, totalDeployments: 34 } },
+    { projectId: 'proj-webapp', metricType: 'DORA_MTTR_HOURS', value: 2.2, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_DEFECT_DENSITY', value: 0.28, recordedAt: new Date('2025-03-31'), metadata: { defects: 6, testCases: 21 } },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_ESCAPED_DEFECTS', value: 1, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-webapp', metricType: 'EXECUTION_PASS_RATE', value: 86.4, recordedAt: new Date('2025-03-31'), metadata: { passed: 38, failed: 4, blocked: 2 } },
+    { projectId: 'proj-webapp', metricType: 'QUALITY_REQUIREMENT_COVERAGE', value: 78, recordedAt: new Date('2025-03-31') },
+    // March 2025 — API
+    { projectId: 'proj-api', metricType: 'DORA_DEPLOY_FREQUENCY', value: 1.8, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-api', metricType: 'DORA_LEAD_TIME_HOURS', value: 28.5, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-api', metricType: 'DORA_CHANGE_FAIL_RATE', value: 5.2, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-api', metricType: 'EXECUTION_PASS_RATE', value: 88.2, recordedAt: new Date('2025-03-31') },
+    // March 2025 — Mobile
+    { projectId: 'proj-mobile', metricType: 'DORA_DEPLOY_FREQUENCY', value: 0.5, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-mobile', metricType: 'QUALITY_ESCAPED_DEFECTS', value: 2, recordedAt: new Date('2025-03-31') },
+    { projectId: 'proj-mobile', metricType: 'EXECUTION_PASS_RATE', value: 72.0, recordedAt: new Date('2025-03-31') },
+  ]
+
+  // Guard: delete existing seeded snapshots before re-inserting (idempotency)
+  await prisma.metricSnapshot.deleteMany({
+    where: { recordedAt: { in: [new Date('2025-01-31'), new Date('2025-02-28'), new Date('2025-03-31')] } },
+  })
+
+  for (const snap of metricSnapshots) {
+    await prisma.metricSnapshot.create({
+      data: {
+        projectId: snap.projectId,
+        metricType: snap.metricType,
+        value: snap.value,
+        recordedAt: snap.recordedAt,
+        ...(snap.metadata ? { metadata: snap.metadata } : {}),
+      },
+    })
+  }
+  console.log(`✓ Seeded ${metricSnapshots.length} metric snapshots`)
+
+  // ── ET Charters ───────────────────────────────────────────────────────────
+  const testerUserForCharter = createdUsers.find(u => u.email === 'tester@qauthority.com') ?? admin
+
+  const etCharters = [
+    {
+      id: 'et-charter-001',
+      suiteId: 'suite-webauth-login',
+      charter: 'Explore authentication edge cases under concurrent load to identify session state bugs.',
+      areas: ['concurrent login', 'session management', 'race conditions', 'token expiry'],
+      startDate: new Date('2025-03-15T14:00:00Z'),
+      testerId: testerUserForCharter.id,
+      duration: 'normal',
+      testDesignPercentage: 35,
+      bugInvestigationPercentage: 35,
+      sessionSetupPercentage: 10,
+      charterVsOpportunity: 65,
+      testNotes: [
+        { action: 'Session Handling', bullets: ['Rapid login/logout cycles cause stale session tokens', 'Multiple tabs with same user create conflicting session states', 'Session timeout not properly cleared from client cache'] },
+        { action: 'Token Management', bullets: ['JWT refresh token can be reused after expiration within 5-second window', 'Token claims not validated on every API call'] },
+      ],
+      opportunities: [
+        { action: 'Performance Testing', bullets: ['Add load testing for login endpoint at 100+ concurrent users', 'Profile token validation performance in hot paths'] },
+      ],
+      bugs: [
+        { name: 'Session not invalidated on logout', steps: ['Login successfully', 'Click logout', 'Navigate to /api/protected'], expected: '403 Forbidden — session invalid', actual: '200 OK — endpoint still accessible' },
+      ],
+      issues: [
+        { description: 'Need clarification on session timeout policy — sliding window or fixed?' },
+      ],
+    },
+    {
+      id: 'et-charter-002',
+      suiteId: 'suite-webui-dash',
+      charter: 'Verify data export functionality maintains integrity and accuracy for large datasets exceeding 50K records.',
+      areas: ['CSV export', 'Excel export', 'data accuracy', 'pagination', 'special characters'],
+      startDate: new Date('2025-03-18T09:30:00Z'),
+      testerId: testerUserForCharter.id,
+      duration: 'long',
+      testDesignPercentage: 40,
+      bugInvestigationPercentage: 30,
+      sessionSetupPercentage: 15,
+      charterVsOpportunity: 70,
+      testNotes: [
+        { action: 'CSV Export Quality', bullets: ['Special characters (quotes, commas, newlines) escaped correctly', 'Unicode characters preserved (emoji, CJK, RTL text)', 'Row count matches database — no silent truncation'] },
+      ],
+      opportunities: [
+        { action: 'Incremental Export', bullets: ['Explore adding date range filters to reduce export size', 'Test resumable downloads on connection failure'] },
+      ],
+      bugs: [
+        { name: 'CSV export truncates decimal precision', steps: ['Export records with decimal fields', 'Open in Excel', 'Compare values with DB'], expected: 'Full precision retained: 3.141592653', actual: 'Precision truncated to 5 decimals: 3.14159' },
+      ],
+      issues: [],
+    },
+    {
+      id: 'et-charter-003',
+      suiteId: 'suite-mobileios-nav',
+      charter: 'Explore iOS-specific navigation patterns and gesture handling across iOS 16-17 devices.',
+      areas: ['gesture handling', 'navigation stack', 'deep linking', 'back button', 'swipe gestures'],
+      startDate: new Date('2025-03-20T16:00:00Z'),
+      testerId: testerUserForCharter.id,
+      duration: 'short',
+      testDesignPercentage: 50,
+      bugInvestigationPercentage: 20,
+      sessionSetupPercentage: 15,
+      charterVsOpportunity: 75,
+      testNotes: [
+        { action: 'Gesture Recognition', bullets: ['Back swipe from left edge sometimes fails on iPhone 13 but works on iPhone 14+', 'Long press on navigation item inconsistently triggers menu instead of navigation'] },
+      ],
+      opportunities: [
+        { action: 'Accessibility Verification', bullets: ['Test VoiceOver navigation through complex flows', 'Verify reduced motion preferences are respected'] },
+      ],
+      bugs: [],
+      issues: [],
+    },
+    {
+      id: 'et-charter-004',
+      suiteId: 'suite-apiv1-auth',
+      charter: 'Test API rate limiting and throttling mechanisms under various load patterns and burst scenarios.',
+      areas: ['rate limiting', 'throttling', 'quota management', 'error responses', 'header compliance'],
+      startDate: new Date('2025-03-22T11:00:00Z'),
+      testerId: testerUserForCharter.id,
+      duration: 'normal',
+      testDesignPercentage: 45,
+      bugInvestigationPercentage: 25,
+      sessionSetupPercentage: 15,
+      charterVsOpportunity: 70,
+      testNotes: [
+        { action: 'Rate Limit Behavior', bullets: ['Per-IP limit enforced: 1000 req/min', 'Burst allowance of 100 requests not functioning as documented', 'Quota calculation appears to include HEAD requests (should exclude)'] },
+        { action: 'Error Handling', bullets: ['429 Too Many Requests status code returned correctly', 'Retry-After header present with correct value'] },
+      ],
+      opportunities: [],
+      bugs: [
+        { name: 'Burst allowance not working as documented', steps: ['Make 100 requests within 1 second', 'Continue at normal rate', 'Observe rate limiting onset'], expected: 'Burst of 100 allowed before enforcing rate limit', actual: 'Rate limit enforced immediately without burst allowance' },
+      ],
+      issues: [],
+    },
+  ]
+
+  for (const charter of etCharters) {
+    const { bugs, issues, testNotes, opportunities, ...charterData } = charter
+    await prisma.eTCharter.upsert({
+      where: { id: charter.id },
+      create: {
+        ...charterData,
+        createdById: admin.id,
+        testNotes,
+        opportunities,
+        bugs,
+        issues,
+      },
+      update: { charter: charterData.charter },
+    })
+  }
+  console.log(`✓ Seeded ${etCharters.length} ET charters`)
+
+  // ── Report Templates ──────────────────────────────────────────────────────
+  const reportTemplates = [
+    {
+      id: 'tmpl-sprint-exec',
+      name: 'Sprint Execution Summary',
+      type: 'EXECUTION_SUMMARY' as const,
+      scope: 'PROJECT' as const,
+      projectId: 'proj-webapp',
+      config: { includeCharts: true, chartType: 'bar', includeTrendLine: true, sections: ['overview', 'results', 'failures', 'duration_stats'], colorScheme: 'professional' },
+    },
+    {
+      id: 'tmpl-monthly-kpi',
+      name: 'Monthly Quality KPI Report',
+      type: 'KPI_SUMMARY' as const,
+      scope: 'ORGANIZATION' as const,
+      projectId: null,
+      config: { metrics: ['DORA_DEPLOY_FREQUENCY', 'DORA_LEAD_TIME_HOURS', 'DORA_CHANGE_FAIL_RATE', 'DORA_MTTR_HOURS', 'QUALITY_DEFECT_DENSITY', 'QUALITY_ESCAPED_DEFECTS', 'EXECUTION_PASS_RATE'], period: 'monthly', comparison: 'previous_month', includeProjectBreakdown: true },
+    },
+    {
+      id: 'tmpl-exec-quarterly',
+      name: 'Executive Quarterly Briefing',
+      type: 'EXECUTIVE_BRIEFING' as const,
+      scope: 'ORGANIZATION' as const,
+      projectId: null,
+      config: { sections: ['executive_summary', 'okr_status', 'key_metrics', 'risks', 'recommendations'], okrMetrics: true, doraMetrics: true, qualityMetrics: true, riskThreshold: 0.3, highlightAchievements: true },
+    },
+    {
+      id: 'tmpl-defect-analysis',
+      name: 'Defect Analysis Report',
+      type: 'DEFECT_ANALYSIS' as const,
+      scope: 'ORGANIZATION' as const,
+      projectId: null,
+      config: { groupBy: 'severity', includeTrends: true, timeframe: '30_days', sections: ['distribution', 'trends', 'escape_analysis', 'recommendations'], detailLevel: 'medium' },
+    },
+  ]
+
+  for (const tmpl of reportTemplates) {
+    await prisma.reportTemplate.upsert({
+      where: { id: tmpl.id },
+      create: { ...tmpl, createdById: admin.id },
+      update: { name: tmpl.name, config: tmpl.config },
+    })
+  }
+  console.log(`✓ Seeded ${reportTemplates.length} report templates`)
+
   await seedGroups(prisma)
 
+  // Associate admin user with System Admin group
+  const systemAdminGroup = await prisma.userGroup.findFirst({
+    where: { name: 'System Admin', projectId: null },
+  })
+  if (systemAdminGroup && admin) {
+    await prisma.userGroupMember.upsert({
+      where: { userId_groupId: { userId: admin.id, groupId: systemAdminGroup.id } },
+      create: { userId: admin.id, groupId: systemAdminGroup.id },
+      update: {},
+    })
+    console.log('✓ Admin user added to System Admin group')
+  }
+
   console.log('Seed completed successfully!')
-  console.log(`Created ${projects.length} projects`)
-  console.log(`Created ${testPlans.length} test plans`)
-  console.log(`Created ${testSuites.length} test suites`)
-  console.log(`Created ${testCases.length} test cases`)
-  console.log(`Created ${executions.length} test executions`)
-  console.log(`Created ${bugs.length} bugs`)
-  console.log(`Created ${createdUsers.length} users`)
+  console.log(`  ${createdUsers.length} users`)
+  console.log(`  ${projects.length} projects`)
+  console.log(`  ${testPlans.length} test plans, ${testSuites.length} suites, ${testCases.length} cases`)
+  console.log(`  ${executions.length} executions, ${bugs.length} defects`)
+  console.log(`  ${okrs.length} OKRs`)
+  console.log(`  ${metricSnapshots.length} metric snapshots`)
+  console.log(`  ${etCharters.length} ET charters`)
+  console.log(`  ${reportTemplates.length} report templates`)
 }
 
 main()
