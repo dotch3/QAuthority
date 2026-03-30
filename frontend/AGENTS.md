@@ -16,7 +16,7 @@ QAuthority is a comprehensive test case management system with:
 ## Project Structure
 
 ```
-testtool/
+qauthority/
 ├── frontend/           # Next.js frontend
 │   └── src/
 │       ├── app/       # Next.js App Router pages

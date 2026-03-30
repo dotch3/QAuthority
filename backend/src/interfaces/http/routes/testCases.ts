@@ -4,23 +4,35 @@ import { evidenceService } from "../../../services/EvidenceService.js"
 import { logger } from "../../../logger.js"
 
 export async function testCaseRoutes(app: FastifyInstance) {
-  app.get<{ Params: { suiteId: string } }>(
+  app.get<{ Params: { suiteId: string }; Querystring: { search?: string; typeId?: string; priorityId?: string; assigneeId?: string; page?: number; limit?: number } }>(
     "/suites/:suiteId/cases",
     {
       schema: {
         tags: ["Test Cases"],
-        summary: "List test cases in a suite",
+        summary: "List test cases in a suite with filters and pagination",
         params: {
           type: "object",
           properties: {
             suiteId: { type: "string" },
           },
         },
+        querystring: {
+          type: "object",
+          properties: {
+            search: { type: "string" },
+            typeId: { type: "string" },
+            priorityId: { type: "string" },
+            assigneeId: { type: "string" },
+            page: { type: "number", default: 1 },
+            limit: { type: "number", default: 25 },
+          },
+        },
       },
     },
     async (request) => {
       const { suiteId } = request.params as { suiteId: string }
-      return testCaseService.findBySuite(suiteId)
+      const { search, typeId, priorityId, assigneeId, page, limit } = request.query as { search?: string; typeId?: string; priorityId?: string; assigneeId?: string; page?: number; limit?: number }
+      return testCaseService.findBySuite(suiteId, { search, typeId, priorityId, assigneeId, page, limit })
     }
   )
 
