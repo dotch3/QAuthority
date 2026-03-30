@@ -4,6 +4,7 @@ import { AuthService, AuthError } from '../../../services/AuthService.js'
 import { JwtService } from '../../../services/JwtService.js'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { logger } from '../../../logger.js'
+import { prisma } from '../../../infrastructure/database/prisma.js'
 
 export async function authRoutes(app: FastifyInstance) {
   const jwtService = new JwtService(
@@ -12,6 +13,17 @@ export async function authRoutes(app: FastifyInstance) {
     config.JWT_REFRESH_EXPIRES_IN,
   )
   const authService = new AuthService(jwtService)
+
+  app.get(
+    '/users',
+    { preHandler: [requireAuth()] },
+    async (_request, reply) => {
+      const users = await prisma.user.findMany({
+        select: { id: true, email: true, name: true, avatarUrl: true },
+      })
+      return reply.send(users)
+    },
+  )
 
   app.get<{ Params: { provider: string } }>(
     '/auth/:provider',
