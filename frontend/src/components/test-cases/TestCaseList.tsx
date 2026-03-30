@@ -73,6 +73,7 @@ export interface TestCaseRow {
     value: string
     label: string
   }
+  assignees?: Array<{ id: string; userId: string; user: { id: string; name: string | null; email: string; avatarUrl?: string } }>
   _count?: {
     executions: number
   }
@@ -86,6 +87,7 @@ interface TestCaseFormData {
   priorityId: string
   typeId: string
   steps: Array<{ order: number; action: string; expectedResult: string }>
+  assigneeIds: string[]
 }
 
 interface TestCaseFormErrors {
@@ -182,6 +184,7 @@ function TestCaseFormDialog({
   isSubmitting: boolean
   error?: string
   suiteId: string
+  projectId?: string
 }) {
   const [formData, setFormData] = useState<TestCaseFormData>({
     title: testCase?.title || "",
@@ -191,12 +194,24 @@ function TestCaseFormDialog({
     priorityId: testCase?.priority?.id || "seed-test_priority-medium",
     typeId: testCase?.type?.id || "seed-test_type-manual",
     steps: testCase?.steps?.map((s, i) => ({ ...s, order: i + 1 })) || [{ order: 1, action: "", expectedResult: "" }],
+    assigneeIds: testCase?.assignees?.map(a => a.userId) || [],
   })
   const [errors, setErrors] = useState<TestCaseFormErrors>({})
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [projectMembers, setProjectMembers] = useState<Array<{ id: string; name: string; email: string; avatarUrl?: string }>>([])
   const { enums: caseEnums } = useEnums(["test_priority", "test_type"])
   const priorities = caseEnums["test_priority"] ?? []
   const types = caseEnums["test_type"] ?? []
+
+  useEffect(() => {
+    if (projectId) {
+      api.get<any[]>(`/projects/${projectId}/members`)
+        .then(data => setProjectMembers(data.map((m: any) => m.user)))
+        .catch(() => setProjectMembers([]))
+    } else {
+      setProjectMembers([])
+    }
+  }, [projectId])
 
   useEffect(() => {
     if (isOpen) {
@@ -208,6 +223,7 @@ function TestCaseFormDialog({
         priorityId: testCase?.priority?.id || "seed-test_priority-medium",
         typeId: testCase?.type?.id || "seed-test_type-manual",
         steps: testCase?.steps?.map((s, i) => ({ ...s, order: i + 1 })) || [{ order: 1, action: "", expectedResult: "" }],
+        assigneeIds: testCase?.assignees?.map(a => a.userId) || [],
       })
       setErrors({})
       setPendingFiles([])
@@ -455,6 +471,44 @@ function TestCaseFormDialog({
                 )}
               </div>
             </div>
+
+            {projectMembers.length > 0 && (
+              <div className="grid gap-2">
+                <Label htmlFor="assignees">Assignees</Label>
+                <div className="border rounded-md max-h-32 overflow-y-auto p-2 space-y-1">
+                  {projectMembers.map((member) => (
+                    <label
+                      key={member.id}
+                      className="flex items-center gap-2 p-1.5 rounded hover:bg-muted cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.assigneeIds.includes(member.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({
+                              ...formData,
+                              assigneeIds: [...formData.assigneeIds, member.id],
+                            })
+                          } else {
+                            setFormData({
+                              ...formData,
+                              assigneeIds: formData.assigneeIds.filter(
+                                (id) => id !== member.id
+                              ),
+                            })
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">
+                        {member.name || member.email}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
@@ -1438,6 +1492,28 @@ export function TestCaseList({
                       </Badge>
                     </TableCell>
                     <TableCell>{testCase.type.label}</TableCell>
+                    <TableCell>
+                      {testCase.assignees && testCase.assignees.length > 0 ? (
+                        <div className="flex -space-x-2">
+                          {testCase.assignees.slice(0, 3).map((a) => (
+                            <div
+                              key={a.id}
+                              className="h-6 w-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs font-medium"
+                              title={a.user.name || a.user.email}
+                            >
+                              {a.user.name?.[0]?.toUpperCase() || a.user.email[0]?.toUpperCase()}
+                            </div>
+                          ))}
+                          {testCase.assignees.length > 3 && (
+                            <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs">
+                              +{testCase.assignees.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-center">
                       {testCase._count?.executions ?? 0}
                     </TableCell>
@@ -1497,6 +1573,7 @@ export function TestCaseList({
         isSubmitting={isSubmitting}
         error={formError}
         suiteId={suiteId}
+        projectId={selectedProject?.id}
       />
 
       <TestCaseFormDialog
@@ -1507,6 +1584,7 @@ export function TestCaseList({
         isSubmitting={isSubmitting}
         error={formError}
         suiteId={suiteId}
+        projectId={selectedProject?.id}
       />
 
       <CopyMoveCaseDialog

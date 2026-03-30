@@ -58,6 +58,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
             priorityId: { type: "string" },
             typeId: { type: "string" },
             automationScriptRef: { type: "string" },
+            assigneeIds: { type: "array", items: { type: "string" } },
           },
         },
         response: { 201: { type: "object", additionalProperties: true } },
@@ -75,6 +76,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
         priorityId: string
         typeId: string
         automationScriptRef?: string
+        assigneeIds?: string[]
       }
 
       const testCase = await testCaseService.create({
@@ -88,6 +90,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
         typeId: body.typeId,
         automationScriptRef: body.automationScriptRef,
         createdById: user.userId,
+        assigneeIds: body.assigneeIds,
       })
 
       logger.info("[TestCase] Created successfully", { testCaseId: testCase.id, externalId: testCase.externalId })
@@ -200,6 +203,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
             priorityId: { type: "string" },
             typeId: { type: "string" },
             automationScriptRef: { type: "string", nullable: true },
+            assigneeIds: { type: "array", items: { type: "string" } },
           },
         },
       },
@@ -216,6 +220,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
         priorityId?: string
         typeId?: string
         automationScriptRef?: string | null
+        assigneeIds?: string[]
       }
 
       return testCaseService.update(id, {
@@ -227,6 +232,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
         priorityId: body.priorityId,
         typeId: body.typeId,
         automationScriptRef: body.automationScriptRef,
+        assigneeIds: body.assigneeIds,
       }, user.userId)
     }
   )

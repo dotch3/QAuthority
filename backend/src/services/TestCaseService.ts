@@ -20,6 +20,7 @@ export interface CreateTestCaseData {
   typeId: string
   automationScriptRef?: string
   createdById: string
+  assigneeIds?: string[]
 }
 
 export interface UpdateTestCaseData {
@@ -31,6 +32,7 @@ export interface UpdateTestCaseData {
   priorityId?: string
   typeId?: string
   automationScriptRef?: string | null
+  assigneeIds?: string[]
 }
 
 export interface TestCaseVersion {
@@ -87,6 +89,9 @@ export class TestCaseService {
         automationScriptRef: data.automationScriptRef,
         externalId,
         createdById: data.createdById,
+        assignees: data.assigneeIds ? {
+          create: data.assigneeIds.map(userId => ({ userId }))
+        } : undefined,
       },
     })
 
@@ -178,19 +183,30 @@ export class TestCaseService {
       await this.createVersion(id, userId)
     }
 
+    const updateData: Prisma.TestCaseUpdateInput = {
+      title: data.title,
+      description: data.description,
+      preconditions: data.preconditions,
+      notes: data.notes,
+      steps: data.steps as unknown as Prisma.InputJsonValue | undefined,
+      priorityId: data.priorityId,
+      typeId: data.typeId,
+      automationScriptRef: data.automationScriptRef,
+      currentVersion: { increment: 1 },
+    }
+
+    if (data.assigneeIds !== undefined) {
+      await prisma.testCaseAssignee.deleteMany({ where: { testCaseId: id } })
+      if (data.assigneeIds.length > 0) {
+        updateData.assignees = {
+          create: data.assigneeIds.map(userId => ({ userId }))
+        }
+      }
+    }
+
     const updated = await prisma.testCase.update({
       where: { id },
-      data: {
-        title: data.title,
-        description: data.description,
-        preconditions: data.preconditions,
-        notes: data.notes,
-        steps: data.steps as unknown as Prisma.InputJsonValue | undefined,
-        priorityId: data.priorityId,
-        typeId: data.typeId,
-        automationScriptRef: data.automationScriptRef,
-        currentVersion: { increment: 1 },
-      },
+      data: updateData,
     })
 
     return updated
