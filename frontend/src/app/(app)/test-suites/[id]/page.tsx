@@ -97,7 +97,8 @@ export default function TestSuiteDetailPage() {
       const suiteData = await api.get<any>(`/suites/${suiteId}`)
       setSuite(suiteData)
       
-      const casesData = await api.get<any[]>(`/suites/${suiteId}/cases`)
+      const casesResponse = await api.get<{ data: any[]; total: number }>(`/suites/${suiteId}/cases`)
+      const casesData = casesResponse.data || []
       setCases(casesData.map((tc: any) => ({
         id: tc.id,
         title: tc.title,
@@ -224,9 +225,17 @@ export default function TestSuiteDetailPage() {
             {selectedProject.name}
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <span>Test Suites</span>
+          <Link href="/test-suites" className="hover:text-foreground">Test Suites</Link>
           <ChevronRight className="h-4 w-4" />
           <span className="text-foreground font-medium">{suite.name}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground ml-1"
+            asChild
+          >
+            <Link href="/test-suites">Change</Link>
+          </Button>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">{suite.name}</h1>
         {suite.description && (

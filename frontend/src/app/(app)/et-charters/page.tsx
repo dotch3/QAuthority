@@ -95,20 +95,18 @@ export default function ETChartersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+        <HierarchyBreadcrumb
+          projectName={selectedProject.name}
+          planName={hierarchySelection.planName}
+          suiteName={hierarchySelection.suiteName}
+          onChange={() => setHierarchySelection(null)}
+        />
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3 mt-1">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950">
             <FileCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           ET Charters
         </h1>
-        <div className="mt-1">
-          <HierarchyBreadcrumb
-            projectName={selectedProject.name}
-            planName={hierarchySelection.planName}
-            suiteName={hierarchySelection.suiteName}
-            onChange={() => setHierarchySelection(null)}
-          />
-        </div>
       </div>
 
       <ETCharterList

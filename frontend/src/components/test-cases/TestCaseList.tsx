@@ -193,8 +193,8 @@ export function TestCaseFormDialog({
     notes: testCase?.notes || "",
     priorityId: testCase?.priority?.id || "seed-test_priority-medium",
     typeId: testCase?.type?.id || "seed-test_type-manual",
-    steps: testCase?.steps?.map((s, i) => ({ ...s, order: i + 1 })) || [{ order: 1, action: "", expectedResult: "" }],
-    assigneeIds: testCase?.assignees?.map(a => a.userId) || [],
+    steps: (Array.isArray(testCase?.steps) ? testCase.steps : []).map((s: any, i: number) => ({ ...s, order: i + 1 })) || [{ order: 1, action: "", expectedResult: "" }],
+    assigneeIds: (testCase?.assignees || []).map((a: any) => a.userId),
   })
   const [errors, setErrors] = useState<TestCaseFormErrors>({})
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
@@ -222,7 +222,7 @@ export function TestCaseFormDialog({
         notes: testCase?.notes || "",
         priorityId: testCase?.priority?.id || "seed-test_priority-medium",
         typeId: testCase?.type?.id || "seed-test_type-manual",
-        steps: testCase?.steps?.map((s, i) => ({ ...s, order: i + 1 })) || [{ order: 1, action: "", expectedResult: "" }],
+        steps: (Array.isArray(testCase?.steps) ? testCase.steps : []).map((s: any, i: number) => ({ ...s, order: i + 1 })) || [{ order: 1, action: "", expectedResult: "" }],
         assigneeIds: testCase?.assignees?.map(a => a.userId) || [],
       })
       setErrors({})
@@ -1107,6 +1107,7 @@ export function TestCaseList({
   onRefresh,
   onSelect,
 }: TestCaseListProps) {
+  console.log("TestCaseList render:", { cases, isLoading, casesLength: cases?.length })
   const { selectedProject } = useProject()
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -1130,9 +1131,9 @@ export function TestCaseList({
     low: 3,
   }
 
-  const filteredCases = cases.filter(
+  const filteredCases = (cases || []).filter(
     (c) =>
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -1166,7 +1167,7 @@ export function TestCaseList({
     return sortDir === "asc" ? <ChevronUp className="ml-1 h-3 w-3" /> : <ChevronDown className="ml-1 h-3 w-3" />
   }
 
-  const selectedCases = cases.filter(c => selectedIds.has(c.id))
+  const selectedCases = (cases || []).filter(c => selectedIds.has(c.id))
   const selectedCount = selectedIds.size
   const isAllSelected = sortedCases.length > 0 && sortedCases.every(c => selectedIds.has(c.id))
 
@@ -1269,6 +1270,7 @@ export function TestCaseList({
         toast.success("Test case created successfully")
       }
       
+      console.log("TestCase created, calling onRefresh")
       onRefresh()
     } catch (err) {
       console.error("[TestCase] Create error:", err)
@@ -1356,7 +1358,7 @@ export function TestCaseList({
         </div>
       )}
 
-      {cases.length === 0 && !searchQuery ? (
+      {(cases || []).length === 0 && !searchQuery ? (
         <EmptyState onCreate={() => setIsCreateOpen(true)} />
       ) : filteredCases.length === 0 ? (
         <div className="rounded-lg border bg-card p-8 text-center">
@@ -1498,11 +1500,11 @@ export function TestCaseList({
                         <div className="flex -space-x-2">
                           {testCase.assignees.slice(0, 3).map((a) => (
                             <div
-                              key={a.id}
+                              key={a.userId}
                               className="h-6 w-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs font-medium"
-                              title={a.user.name || a.user.email}
+                              title={a.user?.name || a.user?.email}
                             >
-                              {a.user.name?.[0]?.toUpperCase() || a.user.email[0]?.toUpperCase()}
+                              {a.user?.name?.[0]?.toUpperCase() || a.user?.email?.[0]?.toUpperCase() || '?'}
                             </div>
                           ))}
                           {testCase.assignees.length > 3 && (

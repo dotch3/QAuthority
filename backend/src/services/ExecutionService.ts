@@ -43,6 +43,7 @@ export class ExecutionService {
       data: {
         testCaseId: data.testCaseId,
         testPlanId: data.testPlanId,
+        suiteId: testCase.suiteId,
         executedById: data.executedById,
         statusId: draftStatus.id,
         environment: data.environment,

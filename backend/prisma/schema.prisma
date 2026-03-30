@@ -247,6 +247,12 @@ model TestPlan {
   createdBy   User      @relation(fields: [createdById], references: [id])
   startDate   DateTime?
   endDate     DateTime?
+  
+  // ID Pattern Settings
+  idPrefix           String?   // e.g., "TC-API" for test cases
+  idInitialNumber    Int?      @default(1) // Starting number for auto-increment
+  bugPrefix          String?   // e.g., "BUG-API" for bugs
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -276,6 +282,7 @@ model TestSuite {
   cases       TestCase[]
   assignees   TestSuiteAssignee[]
   etCharters  ETCharter[]
+  executions  TestExecution[]
 
   @@map("test_suites")
 }
@@ -287,6 +294,8 @@ model ETCharter {
   charter                   String    // Nome do charter (formato: frase terminada com ponto)
   areas                     String[]  // Áreas cobradas
   startDate                 DateTime? // Data/hora de início
+  endDate                   DateTime? // Data/hora de fim
+  status                    String    @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED, CANCELLED
   testerId                  String?   // Testador designado
   tester                    User?     @relation("ETCharterTester", fields: [testerId], references: [id])
   
@@ -441,6 +450,8 @@ model TestExecution {
   testCase    TestCase  @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
   testPlanId  String
   testPlan    TestPlan  @relation(fields: [testPlanId], references: [id], onDelete: Cascade)
+  suiteId     String?
+  suite       TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   statusId    String
   status      EnumValue @relation("TestExecutionStatus", fields: [statusId], references: [id])
   executedById String
@@ -492,8 +503,10 @@ model Defect {
   severity    EnumValue @relation("BugSeverity", fields: [severityId], references: [id])
   sourceId    String
   source      EnumValue @relation("BugSource", fields: [sourceId], references: [id])
-  externalId  String?
-  externalUrl String?
+  externalId    String?
+  externalUrl   String?
+  actualResult  String?
+  expectedResult String?
   reportedById String
   reportedBy  User      @relation("BugReportedBy", fields: [reportedById], references: [id])
   assignedToId String?
@@ -780,6 +793,12 @@ enum MetricType {
   QUALITY_ESCAPED_DEFECTS
   EXECUTION_BURNDOWN
   EXECUTION_PASS_RATE
+  // New KPIs from INFO-GOV
+  AUTOMATION_RATE
+  EXECUTION_VELOCITY
+  FLOW_EFFICIENCY
+  CYCLE_TIME_DAYS
+  CODE_COVERAGE
 }
 
 model OKR {
@@ -854,6 +873,22 @@ model ExecutiveDashboard {
   createdAt   DateTime @default(now())
 
   @@map("executive_dashboards")
+}
+
+// ─── Process Templates ────────────────────────────────────────────────────────
+
+model ProcessTemplate {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  category    String    // agile | waterfall | cicd | shift-left | shift-right | rbt
+  steps       Json      // [{order, name, description, type, duration?}]
+  isSystem    Boolean   @default(false)
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("process_templates")
 }
 
 // ─── CI/CD & External Integrations ─────────────────────────────────────────

@@ -170,6 +170,8 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
         priorityId: "seed-bug_priority-medium",
         severityId: "seed-bug_severity-major",
         sourceId: "seed-bug_source-internal",
+        actualResult: "",
+        expectedResult: "",
       })
       onCreateBug?.(bug)
       onRefresh?.()
@@ -408,13 +410,13 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                   <td className="px-4 py-3">
                     <Badge
                       style={{
-                        backgroundColor: `${bug.status.color}20`,
-                        color: bug.status.color,
-                        borderColor: `${bug.status.color}40`,
+                        backgroundColor: `${bug.status?.color || '#6b7280'}20`,
+                        color: bug.status?.color || '#6b7280',
+                        borderColor: `${bug.status?.color || '#6b7280'}40`,
                       }}
                       variant="outline"
                     >
-                      {bug.status.label}
+                      {bug.status?.label}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
@@ -752,6 +754,32 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                     }
                     placeholder="Detailed steps to reproduce..."
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="create-expected">Expected Result</Label>
+                    <textarea
+                      id="create-expected"
+                      className="mt-1 min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={createForm.expectedResult ?? ""}
+                      onChange={(e) =>
+                        setCreateForm({ ...createForm, expectedResult: e.target.value })
+                      }
+                      placeholder="What should have happened..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-actual">Actual Result</Label>
+                    <textarea
+                      id="create-actual"
+                      className="mt-1 min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={createForm.actualResult ?? ""}
+                      onChange={(e) =>
+                        setCreateForm({ ...createForm, actualResult: e.target.value })
+                      }
+                      placeholder="What actually happened..."
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

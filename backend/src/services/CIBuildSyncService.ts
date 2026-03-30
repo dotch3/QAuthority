@@ -110,6 +110,7 @@ export class CIBuildSyncService {
               data: {
                 testCaseId: testCase.id,
                 testPlanId: activePlan.id,
+                suiteId: testCase.suiteId,
                 statusId,
                 executedById: defaultUser?.id ?? '00000000-0000-0000-0000-000000000000',
                 executedAt: new Date(),

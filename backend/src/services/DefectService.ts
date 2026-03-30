@@ -14,6 +14,8 @@ export interface CreateDefectData {
   assignedToId?: string
   externalId?: string
   externalUrl?: string
+  actualResult?: string
+  expectedResult?: string
 }
 
 export interface UpdateDefectData {
@@ -41,6 +43,8 @@ export class DefectService {
         assignedToId: data.assignedToId,
         externalId: data.externalId,
         externalUrl: data.externalUrl,
+        actualResult: data.actualResult,
+        expectedResult: data.expectedResult,
       },
     })
   }
