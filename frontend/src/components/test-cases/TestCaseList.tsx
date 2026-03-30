@@ -18,7 +18,6 @@ import {
   CheckSquare,
   Square,
   UserPlus,
-  Eye,
   Paperclip,
   ChevronUp,
   ChevronDown,
@@ -1534,10 +1533,6 @@ export function TestCaseList({
                           <DropdownMenuItem onClick={() => onSelect ? onSelect(testCase) : setEditingCase(testCase)}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onSelect?.(testCase)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => setCopyMoveCase({ testCase, mode: "copy" })}>

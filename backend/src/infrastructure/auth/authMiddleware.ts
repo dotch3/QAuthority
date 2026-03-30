@@ -6,7 +6,7 @@ type PermAction = 'create' | 'read' | 'update' | 'delete' | 'export'
 
 export function requirePermission(module: ModuleType, action: PermAction) {
   return async (req: any, reply: any) => {
-    const userId = req.user?.id
+    const userId = req.user?.userId
     if (!userId) return reply.code(401).send({ error: 'Unauthorized' })
 
     const service = new PermissionMatrixService(prisma)
