@@ -254,9 +254,9 @@ export default function TestSuiteDetailPage() {
                         {caseItem.assignees.length > 0 ? (
                             <div className="flex items-center gap-1">
                               <div className="flex -space-x-2">
-                                {caseItem.assignees.slice(0, 3).map((assignee) => (
+                                {caseItem.assignees.slice(0, 3).map((assignee, idx) => (
                                   <Avatar
-                                    key={assignee.userId}
+                                    key={`${assignee.userId}-${idx}`}
                                     className="h-6 w-6 border-2 border-background"
                                   >
                                     <AvatarFallback className="text-[10px]">
