@@ -57,6 +57,9 @@ model User {
   suiteAssignees   TestSuiteAssignee[]
   caseAssignees    TestCaseAssignee[]
   groupMemberships UserGroupMember[]
+  testRunsCreated  TestRun[]           @relation("TestRunCreatedBy")
+  testRunCases     TestRunCase[]       @relation("TestRunCaseAssignee")
+  ciRunnersCreated CIRunnerConfig[]    @relation("CIRunnerCreatedBy")
 
   @@map("users")
 }
@@ -202,6 +205,8 @@ model Project {
 
   members         ProjectMember[]
   testPlans       TestPlan[]
+  testRuns        TestRun[]
+  ciRunnerConfigs CIRunnerConfig[]
   defects         Defect[]
   integrations    Integration[]
   customFieldDefs CustomFieldDef[]
@@ -247,11 +252,18 @@ model TestPlan {
   createdBy   User      @relation(fields: [createdById], references: [id])
   startDate   DateTime?
   endDate     DateTime?
+  
+  // ID Pattern Settings
+  idPrefix           String?   // e.g., "TC-API" for test cases
+  idInitialNumber    Int?      @default(1) // Starting number for auto-increment
+  bugPrefix          String?   // e.g., "BUG-API" for bugs
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   suites     TestSuite[]
   executions TestExecution[]
+  testRuns   TestRun[]
 
   @@map("test_plans")
 }
@@ -276,6 +288,7 @@ model TestSuite {
   cases       TestCase[]
   assignees   TestSuiteAssignee[]
   etCharters  ETCharter[]
+  executions  TestExecution[]
 
   @@map("test_suites")
 }
@@ -287,6 +300,8 @@ model ETCharter {
   charter                   String    // Nome do charter (formato: frase terminada com ponto)
   areas                     String[]  // Áreas cobradas
   startDate                 DateTime? // Data/hora de início
+  endDate                   DateTime? // Data/hora de fim
+  status                    String    @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED, CANCELLED
   testerId                  String?   // Testador designado
   tester                    User?     @relation("ETCharterTester", fields: [testerId], references: [id])
   
@@ -405,12 +420,13 @@ model TestCase {
   updatedAt           DateTime  @updatedAt
   currentVersion      Int       @default(1)
 
-  executions  TestExecution[]
-  tags        TestCaseTag[]
-  assignees   TestCaseAssignee[]
-  etCharters  ETCharterTestCase[]
-  versions    TestCaseVersion[]
+  executions   TestExecution[]
+  tags         TestCaseTag[]
+  assignees    TestCaseAssignee[]
+  etCharters   ETCharterTestCase[]
+  versions     TestCaseVersion[]
   generatedCodes GeneratedTestCode[]
+  testRunCases TestRunCase[]
 
   @@map("test_cases")
 }
@@ -441,6 +457,8 @@ model TestExecution {
   testCase    TestCase  @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
   testPlanId  String
   testPlan    TestPlan  @relation(fields: [testPlanId], references: [id], onDelete: Cascade)
+  suiteId     String?
+  suite       TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   statusId    String
   status      EnumValue @relation("TestExecutionStatus", fields: [statusId], references: [id])
   executedById String
@@ -448,10 +466,12 @@ model TestExecution {
   executedAt  DateTime  @default(now())
   durationMs  Int?
   notes       String?
-  ciRunId     String?
-  environment String?
-  platform    String?
-  createdAt   DateTime  @default(now())
+  ciRunId       String?
+  testRunCaseId String?
+  testRunCase   TestRunCase? @relation(fields: [testRunCaseId], references: [id], onDelete: SetNull)
+  environment   String?
+  platform      String?
+  createdAt     DateTime  @default(now())
 
   defects     BugTestExecution[]
   tags        TestExecutionTag[]
@@ -475,6 +495,91 @@ model ExecutionStepResult {
   @@map("execution_step_results")
 }
 
+// ─── CI Runner Configs ─────────────────────────────────────────────────────
+
+model CIRunnerConfig {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  type        String
+  // jenkins | github_actions | gitlab_ci | custom_webhook
+  framework   String
+  // playwright | cypress | jest | selenium
+  baseUrl     String?  // Jenkins URL / GitHub API URL
+  credential  String?  // encrypted token/PAT
+  config      Json     @default("{}")
+  // Jenkins:  { jobName, paramTestCommand, paramWebhookUrl }
+  // GitHub:   { owner, repo, workflowId, ref }
+  // GitLab:   { projectId, ref, triggerToken }
+  // Custom:   { endpoint, headers }
+  scriptTemplate String?
+  // optional custom command template, e.g.:
+  // "npx playwright test --grep '{GREP}' --reporter=junit --output=results/{RUNID}.xml"
+  active      Boolean  @default(true)
+  createdById String
+  createdBy   User     @relation("CIRunnerCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  testRuns TestRun[]
+
+  @@map("ci_runner_configs")
+}
+
+// ─── Test Runs ─────────────────────────────────────────────────────────────
+
+model TestRun {
+  id              String          @id @default(uuid())
+  projectId       String
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testPlanId      String
+  testPlan        TestPlan        @relation(fields: [testPlanId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  status          String          @default("not_started")
+  // not_started | in_progress | completed | aborted
+  environment     String?
+  // CI automation fields
+  ciRunnerId      String?
+  ciRunner        CIRunnerConfig? @relation(fields: [ciRunnerId], references: [id], onDelete: SetNull)
+  ciJobId         String?         // Jenkins build number or GitHub run ID
+  ciStatus        String?         // pending | running | completed | failed
+  ciJobUrl        String?         // link to CI run for the user
+  callbackToken   String?         // unique token for webhook auth
+  generatedScript String?         // the exact command that was dispatched
+  createdById     String
+  createdBy       User            @relation("TestRunCreatedBy", fields: [createdById], references: [id])
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  cases TestRunCase[]
+
+  @@map("test_runs")
+}
+
+model TestRunCase {
+  id          String    @id @default(uuid())
+  testRunId   String
+  testRun     TestRun   @relation(fields: [testRunId], references: [id], onDelete: Cascade)
+  testCaseId  String
+  testCase    TestCase  @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  assigneeId  String?
+  assignee    User?     @relation("TestRunCaseAssignee", fields: [assigneeId], references: [id])
+  status      String    @default("not_run")
+  // not_run | in_progress | passed | failed | blocked | skipped
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  executions TestExecution[]
+
+  @@unique([testRunId, testCaseId])
+  @@map("test_run_cases")
+}
+
 // ─── Defects ───────────────────────────────────────────────────────────────
 
 model Defect {
@@ -492,8 +597,10 @@ model Defect {
   severity    EnumValue @relation("BugSeverity", fields: [severityId], references: [id])
   sourceId    String
   source      EnumValue @relation("BugSource", fields: [sourceId], references: [id])
-  externalId  String?
-  externalUrl String?
+  externalId    String?
+  externalUrl   String?
+  actualResult  String?
+  expectedResult String?
   reportedById String
   reportedBy  User      @relation("BugReportedBy", fields: [reportedById], references: [id])
   assignedToId String?
@@ -780,6 +887,12 @@ enum MetricType {
   QUALITY_ESCAPED_DEFECTS
   EXECUTION_BURNDOWN
   EXECUTION_PASS_RATE
+  // New KPIs from INFO-GOV
+  AUTOMATION_RATE
+  EXECUTION_VELOCITY
+  FLOW_EFFICIENCY
+  CYCLE_TIME_DAYS
+  CODE_COVERAGE
 }
 
 model OKR {
@@ -854,6 +967,22 @@ model ExecutiveDashboard {
   createdAt   DateTime @default(now())
 
   @@map("executive_dashboards")
+}
+
+// ─── Process Templates ────────────────────────────────────────────────────────
+
+model ProcessTemplate {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  category    String    // agile | waterfall | cicd | shift-left | shift-right | rbt
+  steps       Json      // [{order, name, description, type, duration?}]
+  isSystem    Boolean   @default(false)
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("process_templates")
 }
 
 // ─── CI/CD & External Integrations ─────────────────────────────────────────

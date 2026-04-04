@@ -3,6 +3,8 @@ export interface Bug {
   projectId: string
   title: string
   description?: string
+  actualResult?: string
+  expectedResult?: string
   statusId: string
   status: {
     id: string
@@ -25,7 +27,7 @@ export interface Bug {
     color: string
   }
   sourceId: string
-  source: {
+  source?: {
     id: string
     value: string
     label: string
@@ -79,6 +81,8 @@ export interface CreateBugInput {
   assignedToId?: string
   externalId?: string
   externalUrl?: string
+  actualResult?: string
+  expectedResult?: string
 }
 
 export interface UpdateBugInput {

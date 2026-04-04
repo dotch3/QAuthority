@@ -17,7 +17,7 @@
 ### Layer 1 — Docs (no code risk)
 - Modify: `README.md`
 - Rename: `docs/testtools-specs.md` → `docs/qauthority-specs.md`
-- Modify: `docs/superpowers/specs/2026-03-27-testtool-governance-design.md` (title)
+- Modify: `docs/superpowers/specs/2026-03-27-qauthority-governance-design.md` (title)
 - Modify: all `.md` files in `/docs/` (string replacement)
 
 ### Layer 2 — Package & Docker

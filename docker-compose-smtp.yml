@@ -13,13 +13,7 @@
 services:
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: testtool-smtp
+    container_name: qauthority-smtp
     ports:
       - "1025:1025"   # SMTP server (for sending emails)
       - "8025:8025"   # Web UI (for viewing emails)
-    networks:
-      - testtool-smtp
-
-networks:
-  testtool-smtp:
-    name: testtool-smtp-network

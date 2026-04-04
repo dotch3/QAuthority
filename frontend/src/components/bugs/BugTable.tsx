@@ -111,6 +111,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
   const [error, setError] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedBug, setSelectedBug] = useState<Bug | null>(null)
+  const [editingBug, setEditingBug] = useState<Bug | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [newBugId, setNewBugId] = useState<string | null>(null)
@@ -170,6 +171,8 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
         priorityId: "seed-bug_priority-medium",
         severityId: "seed-bug_severity-major",
         sourceId: "seed-bug_source-internal",
+        actualResult: "",
+        expectedResult: "",
       })
       onCreateBug?.(bug)
       onRefresh?.()
@@ -185,7 +188,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
     try {
       const data = await api.get<any[]>(`/projects/${projectId}/executions`)
       setAvailableExecutions(data)
-      const linkedIds = selectedBug?.executions?.map((e) => e.id) || []
+      const linkedIds = editingBug?.executions?.map((e) => e.id) || []
       setLinkedExecutionIds(linkedIds)
     } catch (err) {
       console.error("Failed to load executions:", err)
@@ -200,13 +203,13 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
   }
 
   const handleLinkExecution = async (executionId: string) => {
-    if (!selectedBug) return
+    if (!editingBug) return
     try {
       if (linkedExecutionIds.includes(executionId)) {
-        await api.delete(`/bugs/${selectedBug.id}/executions/${executionId}`)
+        await api.delete(`/bugs/${editingBug.id}/executions/${executionId}`)
         setLinkedExecutionIds(linkedExecutionIds.filter((id) => id !== executionId))
       } else {
-        await api.post(`/bugs/${selectedBug.id}/executions/${executionId}`)
+        await api.post(`/bugs/${editingBug.id}/executions/${executionId}`)
         setLinkedExecutionIds([...linkedExecutionIds, executionId])
       }
     } catch (err) {
@@ -215,11 +218,11 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
   }
 
   const handleUpdateBug = async () => {
-    if (!selectedBug) return
+    if (!editingBug) return
     try {
-      const updated = await api.patch<Bug>(`/bugs/${selectedBug.id}`, editForm)
+      const updated = await api.patch<Bug>(`/bugs/${editingBug.id}`, editForm)
       setBugs(bugs.map((b) => (b.id === updated.id ? updated : b)))
-      setSelectedBug(updated)
+      setEditingBug(null)
       setIsEditDialogOpen(false)
       setEditForm({})
       onRefresh?.()
@@ -408,13 +411,13 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                   <td className="px-4 py-3">
                     <Badge
                       style={{
-                        backgroundColor: `${bug.status.color}20`,
-                        color: bug.status.color,
-                        borderColor: `${bug.status.color}40`,
+                        backgroundColor: `${bug.status?.color || '#6b7280'}20`,
+                        color: bug.status?.color || '#6b7280',
+                        borderColor: `${bug.status?.color || '#6b7280'}40`,
                       }}
                       variant="outline"
                     >
-                      {bug.status.label}
+                      {bug.status?.label}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
@@ -439,8 +442,9 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setSelectedBug(bug)
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingBug(bug)
                           setEditForm({})
                           setIsEditDialogOpen(true)
                         }}
@@ -502,7 +506,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                 </div>
                 <div>
                   <p className="text-muted-foreground">Source</p>
-                  <p>{selectedBug.source.label}</p>
+                  <p>{selectedBug.source?.label ?? "—"}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Reported By</p>
@@ -530,7 +534,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                     className="inline-flex items-center text-sm text-blue-500 hover:underline"
                   >
                     <ExternalLink className="mr-1 h-3 w-3" />
-                    View in {selectedBug.source.label}
+                    View in {selectedBug.source?.label ?? "external tracker"}
                   </a>
                 </div>
               )}
@@ -563,13 +567,13 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={(open) => { if (!open) { setIsEditDialogOpen(false); setEditingBug(null) } }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Bug</DialogTitle>
             <DialogDescription>
-              {selectedBug?.externalId
-                ? `Update bug ${selectedBug.externalId}`
+              {editingBug?.externalId
+                ? `Update bug ${editingBug.externalId}`
                 : "Update the bug details, status, and evidence."}
             </DialogDescription>
           </DialogHeader>
@@ -578,7 +582,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
               <Label htmlFor="edit-title">Title *</Label>
               <Input
                 id="edit-title"
-                value={editForm.title ?? selectedBug?.title ?? ""}
+                value={editForm.title ?? editingBug?.title ?? ""}
                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
               />
             </div>
@@ -587,7 +591,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
               <textarea
                 id="edit-description"
                 className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={editForm.description ?? selectedBug?.description ?? ""}
+                value={editForm.description ?? editingBug?.description ?? ""}
                 onChange={(e) =>
                   setEditForm({ ...editForm, description: e.target.value })
                 }
@@ -600,7 +604,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                 <select
                   id="edit-status"
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                  value={editForm.statusId ?? selectedBug?.statusId ?? ""}
+                  value={editForm.statusId ?? editingBug?.statusId ?? ""}
                   onChange={(e) => setEditForm({ ...editForm, statusId: e.target.value })}
                 >
                   {BUG_STATUSES.map((s) => (
@@ -613,7 +617,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                 <select
                   id="edit-priority"
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                  value={editForm.priorityId ?? selectedBug?.priorityId ?? ""}
+                  value={editForm.priorityId ?? editingBug?.priorityId ?? ""}
                   onChange={(e) => setEditForm({ ...editForm, priorityId: e.target.value })}
                 >
                   {BUG_PRIORITIES.map((p) => (
@@ -626,7 +630,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                 <select
                   id="edit-severity"
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                  value={editForm.severityId ?? selectedBug?.severityId ?? ""}
+                  value={editForm.severityId ?? editingBug?.severityId ?? ""}
                   onChange={(e) => setEditForm({ ...editForm, severityId: e.target.value })}
                 >
                   {BUG_SEVERITIES.map((s) => (
@@ -639,7 +643,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                 <select
                   id="edit-source"
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                  value={editForm.sourceId ?? selectedBug?.sourceId ?? ""}
+                  value={editForm.sourceId ?? editingBug?.sourceId ?? ""}
                   onChange={(e) => setEditForm({ ...editForm, sourceId: e.target.value })}
                 >
                   {BUG_SOURCES.map((s) => (
@@ -659,19 +663,19 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                 </p>
               )}
             </div>
-            {selectedBug && (
+            {editingBug && (
               <div className="grid gap-2">
                 <Label>Evidence</Label>
                 <EvidenceManager
                   entityType="bug"
-                  entityId={selectedBug.id}
+                  entityId={editingBug.id}
                   projectId={projectId}
                 />
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button variant="outline" onClick={() => { setIsEditDialogOpen(false); setEditingBug(null) }}>
               Cancel
             </Button>
             <Button onClick={handleUpdateBug}>Save Changes</Button>
@@ -752,6 +756,32 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                     }
                     placeholder="Detailed steps to reproduce..."
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="create-expected">Expected Result</Label>
+                    <textarea
+                      id="create-expected"
+                      className="mt-1 min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={createForm.expectedResult ?? ""}
+                      onChange={(e) =>
+                        setCreateForm({ ...createForm, expectedResult: e.target.value })
+                      }
+                      placeholder="What should have happened..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-actual">Actual Result</Label>
+                    <textarea
+                      id="create-actual"
+                      className="mt-1 min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={createForm.actualResult ?? ""}
+                      onChange={(e) =>
+                        setCreateForm({ ...createForm, actualResult: e.target.value })
+                      }
+                      placeholder="What actually happened..."
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

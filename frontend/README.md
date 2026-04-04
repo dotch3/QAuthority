@@ -1,6 +1,6 @@
-# Frontend - TestTool UI
+# Frontend - QAuthority UI
 
-Next.js-based frontend for TestTool, featuring a modern dark-themed interface.
+Next.js-based frontend for QAuthority, featuring a modern dark-themed interface.
 
 ## Stack
 
@@ -13,7 +13,7 @@ Next.js-based frontend for TestTool, featuring a modern dark-themed interface.
 ## Prerequisites
 
 - Node.js 22+
-- TestTool Backend running on port 3001
+- QAuthority Backend running on port 3001
 
 ## Setup Environment
 
@@ -45,26 +45,26 @@ Note: The first time you access, it will redirect to `/pt-BR` (Portuguese locale
 ```bash
 # Build image
 cd ..
-podman build -t testtool-frontend:latest frontend/
+podman build -t qauthority-ui:latest frontend/
 
 # Run container
 podman run -d \
-  --name testtool-frontend \
+  --name qauthority-ui \
   -p 3000:3000 \
   --env-file .env.podman \
-  testtool-frontend:latest
+  qauthority-ui:latest
 ```
 
 ### After Code Changes
 
 ```bash
-podman rm -f testtool-frontend
-podman build -t testtool-frontend:latest frontend/
+podman rm -f qauthority-ui
+podman build -t qauthority-ui:latest frontend/
 podman run -d \
-  --name testtool-frontend \
+  --name qauthority-ui \
   -p 3000:3000 \
   --env-file .env.podman \
-  testtool-frontend:latest
+  qauthority-ui:latest
 ```
 
 ## Available Scripts
@@ -110,19 +110,19 @@ The app supports multiple languages via `next-intl`. Default language is Portugu
 ### Build Image
 
 ```bash
-docker build -t testtool-frontend:latest frontend/
+docker build -t qauthority-ui:latest frontend/
 # or
-podman build -t testtool-frontend:latest frontend/
+podman build -t qauthority-ui:latest frontend/
 ```
 
 ### Run Container
 
 ```bash
 docker run -d \
-  --name testtool-frontend \
+  --name qauthority-ui \
   -p 3000:3000 \
   --env-file .env \
-  testtool-frontend:latest
+  qauthority-ui:latest
 ```
 
 For full-stack deployment, see the [root README](../README.md).

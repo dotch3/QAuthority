@@ -120,6 +120,9 @@ export async function testPlanRoutes(app: FastifyInstance) {
             statusId: { type: "string" },
             startDate: { type: "string", nullable: true },
             endDate: { type: "string", nullable: true },
+            idPrefix: { type: "string", nullable: true },
+            idInitialNumber: { type: "number", nullable: true },
+            bugPrefix: { type: "string", nullable: true },
           },
         },
       },
@@ -133,6 +136,9 @@ export async function testPlanRoutes(app: FastifyInstance) {
         statusId?: string
         startDate?: string | null
         endDate?: string | null
+        idPrefix?: string | null
+        idInitialNumber?: number | null
+        bugPrefix?: string | null
       }
 
       return testPlanService.update(id, {
@@ -141,6 +147,9 @@ export async function testPlanRoutes(app: FastifyInstance) {
         statusId: body.statusId,
         startDate: body.startDate ? new Date(body.startDate) : undefined,
         endDate: body.endDate ? new Date(body.endDate) : undefined,
+        idPrefix: body.idPrefix,
+        idInitialNumber: body.idInitialNumber,
+        bugPrefix: body.bugPrefix,
       }, user.userId, user.roleId)
     }
   )

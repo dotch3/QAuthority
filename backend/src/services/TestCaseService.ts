@@ -33,6 +33,7 @@ export interface UpdateTestCaseData {
   typeId?: string
   automationScriptRef?: string | null
   assigneeIds?: string[]
+  externalId?: string
 }
 
 export interface TestCaseVersion {
@@ -111,29 +112,73 @@ export class TestCaseService {
     })
   }
 
-  async findBySuite(suiteId: string): Promise<TestCase[]> {
-    return prisma.testCase.findMany({
-      where: { suiteId },
-      include: {
-        priority: true,
-        type: true,
-        assignees: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
+  async findBySuite(
+    suiteId: string,
+    options?: {
+      search?: string
+      typeId?: string
+      priorityId?: string
+      assigneeId?: string
+      page?: number
+      limit?: number
+    }
+  ): Promise<{ data: TestCase[]; total: number }> {
+    const { search, typeId, priorityId, assigneeId, page = 1, limit = 25 } = options || {}
+    
+    const where: Prisma.TestCaseWhereInput = {
+      suiteId,
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { id: { contains: search, mode: "insensitive" } },
+      ]
+    }
+
+    if (typeId) {
+      where.typeId = typeId
+    }
+
+    if (priorityId) {
+      where.priorityId = priorityId
+    }
+
+    if (assigneeId) {
+      where.assignees = {
+        some: { userId: assigneeId }
+      }
+    }
+
+    const [data, total] = await Promise.all([
+      prisma.testCase.findMany({
+        where,
+        include: {
+          priority: true,
+          type: true,
+          assignees: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
               },
             },
           },
+          _count: {
+            select: { executions: { where: { suiteId } } },
+          },
         },
-        _count: {
-          select: { executions: true },
-        },
-      },
-      orderBy: { createdAt: "asc" },
-    })
+        orderBy: { createdAt: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.testCase.count({ where }),
+    ])
+
+    return { data, total }
   }
 
   async findByProject(projectId: string): Promise<TestCase[]> {
@@ -189,9 +234,10 @@ export class TestCaseService {
       preconditions: data.preconditions,
       notes: data.notes,
       steps: data.steps as unknown as Prisma.InputJsonValue | undefined,
-      priorityId: data.priorityId,
-      typeId: data.typeId,
+      priority: data.priorityId ? { connect: { id: data.priorityId } } : undefined,
+      type: data.typeId ? { connect: { id: data.typeId } } : undefined,
       automationScriptRef: data.automationScriptRef,
+      externalId: data.externalId,
       currentVersion: { increment: 1 },
     }
 

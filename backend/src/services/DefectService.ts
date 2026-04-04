@@ -14,6 +14,8 @@ export interface CreateDefectData {
   assignedToId?: string
   externalId?: string
   externalUrl?: string
+  actualResult?: string
+  expectedResult?: string
 }
 
 export interface UpdateDefectData {
@@ -41,6 +43,15 @@ export class DefectService {
         assignedToId: data.assignedToId,
         externalId: data.externalId,
         externalUrl: data.externalUrl,
+        actualResult: data.actualResult,
+        expectedResult: data.expectedResult,
+      },
+      include: {
+        status: true,
+        priority: true,
+        severity: true,
+        source: true,
+        reportedBy: { select: { id: true, name: true, email: true } },
       },
     })
   }
@@ -49,12 +60,12 @@ export class DefectService {
     return prisma.defect.findUnique({
       where: { id },
       include: {
-        reportedBy: {
-          select: { id: true, name: true, email: true },
-        },
-        assignedTo: {
-          select: { id: true, name: true, email: true },
-        },
+        status: true,
+        priority: true,
+        severity: true,
+        source: true,
+        reportedBy: { select: { id: true, name: true, email: true } },
+        assignedTo: { select: { id: true, name: true, email: true } },
       },
     })
   }
@@ -66,6 +77,7 @@ export class DefectService {
         status: true,
         priority: true,
         severity: true,
+        source: true,
         reportedBy: {
           select: { id: true, name: true, email: true },
         },
@@ -88,6 +100,7 @@ export class DefectService {
         status: true,
         priority: true,
         severity: true,
+        source: true,
       },
     })
   }

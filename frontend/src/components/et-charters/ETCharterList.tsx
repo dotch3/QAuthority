@@ -92,6 +92,8 @@ interface ETCharter {
   charter: string
   areas: string[]
   startDate?: string
+  endDate?: string
+  status: string // NOT_STARTED, IN_PROGRESS, COMPLETED, CANCELLED
   testerId?: string
   tester?: { id: string; name?: string; email: string }
   duration?: string
@@ -166,6 +168,8 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
         charter: c.charter,
         areas: c.areas || [],
         startDate: c.startDate,
+        endDate: c.endDate,
+        status: c.status || "NOT_STARTED",
         testerId: c.testerId,
         tester: c.tester,
         duration: c.duration,
@@ -215,6 +219,8 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
     charter: string
     areas?: string[]
     startDate?: string
+    endDate?: string
+    status?: string
     testerId?: string
     duration?: string
     testDesignPercentage?: number
@@ -233,6 +239,8 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
         charter: data.charter,
         areas: data.areas,
         startDate: data.startDate,
+        endDate: data.endDate,
+        status: data.status,
         testerId: data.testerId,
         duration: data.duration,
         testDesignPercentage: data.testDesignPercentage,
@@ -271,6 +279,8 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
     opportunities?: Array<{ action: string; bullets: string[] }>
     bugs?: Array<{ name: string; steps: string[]; expected: string; actual: string }>
     issues?: Array<{ description: string }>
+    endDate?: string
+    status?: string
   }) => {
     if (!editingCharter) return
     try {
@@ -278,6 +288,8 @@ export function ETCharterList({ suiteId, suiteName, cases, onRefresh }: ETCharte
         charter: data.charter,
         areas: data.areas,
         startDate: data.startDate,
+        endDate: data.endDate,
+        status: data.status,
         testerId: data.testerId,
         duration: data.duration,
         testDesignPercentage: data.testDesignPercentage,
@@ -532,6 +544,27 @@ function CharterCard({
                 </div>
               )}
               <div className="flex items-center gap-4 mt-3 text-sm">
+                {charter.status && (
+                  <Badge 
+                    variant={
+                      charter.status === 'COMPLETED' ? 'default' :
+                      charter.status === 'IN_PROGRESS' ? 'default' :
+                      charter.status === 'CANCELLED' ? 'secondary' :
+                      'outline'
+                    }
+                    className={
+                      charter.status === 'COMPLETED' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                      charter.status === 'IN_PROGRESS' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                      charter.status === 'CANCELLED' ? 'bg-gray-500/10 text-gray-600 border-gray-500/20' :
+                      ''
+                    }
+                  >
+                    {charter.status === 'NOT_STARTED' ? 'Not Started' :
+                     charter.status === 'IN_PROGRESS' ? 'In Progress' :
+                     charter.status === 'COMPLETED' ? 'Completed' :
+                     charter.status === 'CANCELLED' ? 'Cancelled' : charter.status}
+                  </Badge>
+                )}
                 {charter.tester && (
                   <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                     <User className="h-3.5 w-3.5" />
@@ -542,6 +575,7 @@ function CharterCard({
                   <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                     <Calendar className="h-3.5 w-3.5" />
                     {new Date(charter.startDate).toLocaleDateString()}
+                    {charter.endDate && ` → ${new Date(charter.endDate).toLocaleDateString()}`}
                   </span>
                 )}
                 {charter.duration && (
@@ -766,6 +800,8 @@ interface CharterDialogProps {
     charter: string
     areas?: string[]
     startDate?: string
+    endDate?: string
+    status?: string
     testerId?: string
     duration?: string
     testDesignPercentage?: number
@@ -791,6 +827,8 @@ function CharterDialog({ users, onSubmit, isSubmitting, trigger, onOpenChange, o
   const [charterText, setCharterText] = useState(charter?.charter || "")
   const [areas, setAreas] = useState<string[]>(charter?.areas || [""])
   const [startDate, setStartDate] = useState(charter?.startDate?.split("T")[0] || "")
+  const [endDate, setEndDate] = useState(charter?.endDate?.split("T")[0] || "")
+  const [status, setStatus] = useState(charter?.status || "NOT_STARTED")
   const [selectedHeuristicIds, setSelectedHeuristicIds] = useState<string[]>(
     charter?.linkedHeuristics?.map((lh) => lh.heuristic.id) || []
   )
@@ -835,6 +873,8 @@ function CharterDialog({ users, onSubmit, isSubmitting, trigger, onOpenChange, o
         charter: charterText.trim(),
         areas: areas.filter((a) => a.trim()),
         startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        status: status || "NOT_STARTED",
         testerId: testerId || undefined,
         duration: duration || undefined,
         testDesignPercentage: testDesignPercentage ? parseInt(testDesignPercentage) : undefined,
@@ -1058,7 +1098,7 @@ function CharterDialog({ users, onSubmit, isSubmitting, trigger, onOpenChange, o
             {/* TAB 2: Session — who, when, how long, files, time split */}
             <TabsContent value="session" className="space-y-4 pt-4">
               <div className="grid gap-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="startDate">Start Date</Label>
                     <Input
@@ -1067,6 +1107,31 @@ function CharterDialog({ users, onSubmit, isSubmitting, trigger, onOpenChange, o
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="endDate">End Date</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="status">Status</Label>
+                    <select
+                      id="status"
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                    >
+                      <option value="NOT_STARTED">Not Started</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="COMPLETED">Completed</option>
+                      <option value="CANCELLED">Cancelled</option>
+                    </select>
                   </div>
 
                   <div className="grid gap-2">
@@ -1418,7 +1483,12 @@ function CharterDialog({ users, onSubmit, isSubmitting, trigger, onOpenChange, o
               {/* Issues */}
               <div className="space-y-3 pt-2 border-t">
                 <div className="flex items-center justify-between">
-                  <Label>Issues</Label>
+                  <div>
+                    <Label>Issues</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Link bugs found during this session. Use Bug IDs (e.g. BUG-1234) or describe the issue.
+                    </p>
+                  </div>
                   <Button type="button" variant="outline" size="sm" onClick={addIssue}>
                     <Plus className="h-3 w-3 mr-1" /> Add Issue
                   </Button>
@@ -1431,8 +1501,9 @@ function CharterDialog({ users, onSubmit, isSubmitting, trigger, onOpenChange, o
                     <Input
                       value={issue.description}
                       onChange={(e) => updateIssue(issueIndex, e.target.value)}
-                      placeholder="Issue description"
+                      placeholder="e.g. BUG-1234 — payment crash on checkout"
                       className="flex-1"
+                      title="Enter a Bug ID (e.g. BUG-1234) to associate a reported bug, or describe the issue found"
                     />
                     {issues.length > 1 && (
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeIssue(issueIndex)}>

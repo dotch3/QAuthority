@@ -8,10 +8,24 @@ import { Node, Edge } from 'reactflow'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
+const BLOCK_COLORS: Record<string, string> = {
+  BRAINSTORMING: '#e9d5ff',
+  RISK_ANALYSIS: '#fecaca',
+  RACI_MATRIX: '#bfdbfe',
+  ORACLE_DEFINITION: '#fef08a',
+  SANITY_SMOKE: '#bbf7d0',
+  ENVIRONMENT_SETUP: '#e5e7eb',
+  SIGN_OFF: '#6ee7b7',
+  NOTE: '#fed7aa',
+  DECISION: '#a5f3fc',
+  SUBPROCESS: '#c7d2fe',
+}
+
 interface QAWorkflow {
   id: string
   name: string
   description?: string
+  projectId: string
   blocks: {
     id: string
     type: string
@@ -53,27 +67,47 @@ export default function ProcessEditorPage() {
     }
   }, [id, router])
 
+  const serializePayload = (name: string, nodes: Node[], edges: Edge[]) => ({
+    name,
+    blocks: nodes.map(n => ({
+      id: n.id,
+      type: n.data.blockType,
+      label: n.data.label,
+      posX: n.position.x,
+      posY: n.position.y,
+    })),
+    edges: edges.map(e => ({
+      sourceBlockId: e.source,
+      targetBlockId: e.target,
+      label: e.label?.toString() ?? null,
+    })),
+  })
+
   const handleSave = async (nodes: Node[], edges: Edge[]) => {
     try {
-      await api.put(`/workflows/${id}`, {
-        name: workflow?.name,
-        blocks: nodes.map(n => ({
-          id: n.id,
-          type: n.data.blockType,
-          label: n.data.label,
-          posX: n.position.x,
-          posY: n.position.y,
-        })),
-        edges: edges.map(e => ({
-          sourceBlockId: e.source,
-          targetBlockId: e.target,
-          label: e.label?.toString() ?? null,
-        })),
-      })
+      await api.put(`/workflows/${id}`, serializePayload(workflow!.name, nodes, edges))
       toast.success('Workflow saved')
-    } catch (err) {
-      console.error('Failed to save workflow:', err)
-      toast.error('Failed to save workflow')
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to save workflow')
+    }
+  }
+
+  const handleSaveAs = async (name: string, nodes: Node[], edges: Edge[]) => {
+    try {
+      // 1. Create a new blank workflow
+      const created = await api.post<QAWorkflow>('/workflows', {
+        name,
+        projectId: workflow!.projectId,
+        blocks: [],
+        edges: [],
+      })
+      // 2. Save content into it
+      await api.put(`/workflows/${created.id}`, serializePayload(name, nodes, edges))
+      toast.success(`Saved as "${name}"`)
+      router.push(`/governance/processes/${created.id}`)
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to save as new workflow')
+      throw err // re-throw so dialog stays open on error
     }
   }
 
@@ -89,7 +123,14 @@ export default function ProcessEditorPage() {
     id: b.id,
     position: { x: b.posX, y: b.posY },
     data: { label: b.label, blockType: b.type },
-    style: { fontSize: '12px', padding: '8px 12px', borderRadius: '6px' },
+    style: {
+      background: BLOCK_COLORS[b.type] ?? '#f3f4f6',
+      border: '1px solid #9ca3af',
+      borderRadius: '6px',
+      padding: '8px 12px',
+      fontSize: '12px',
+      color: '#111827',
+    },
   }))
 
   const initialEdges: Edge[] = workflow.edges.map((e: any) => ({
@@ -117,7 +158,9 @@ export default function ProcessEditorPage() {
         <WorkflowCanvas
           initialNodes={initialNodes}
           initialEdges={initialEdges}
+          workflowName={workflow.name}
           onSave={handleSave}
+          onSaveAs={handleSaveAs}
         />
       </div>
     </div>

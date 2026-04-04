@@ -26,8 +26,8 @@ export default function TestCasesPage() {
     setIsLoading(true)
     setError("")
     try {
-      const data = await api.get<TestCaseRow[]>(`/suites/${hierarchySelection.suiteId}/cases`)
-      setCases(data)
+      const data = await api.get<{ data: TestCaseRow[]; total: number }>(`/suites/${hierarchySelection.suiteId}/cases`)
+      setCases(data.data || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load test cases")
       setCases([])
@@ -71,15 +71,13 @@ export default function TestCasesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Test Cases</h1>
-        <div className="mt-1">
-          <HierarchyBreadcrumb
-            projectName={selectedProject.name}
-            planName={hierarchySelection.planName}
-            suiteName={hierarchySelection.suiteName}
-            onChange={() => setHierarchySelection(null)}
-          />
-        </div>
+        <HierarchyBreadcrumb
+          projectName={selectedProject.name}
+          planName={hierarchySelection.planName}
+          suiteName={hierarchySelection.suiteName}
+          onChange={() => setHierarchySelection(null)}
+        />
+        <h1 className="text-3xl font-bold tracking-tight mt-1">Test Cases</h1>
       </div>
 
       <TestCaseList

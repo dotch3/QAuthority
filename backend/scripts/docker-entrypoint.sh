@@ -9,7 +9,7 @@ if [ -z "$DB_HOST" ]; then
   # Extract host from DATABASE_URL (format: postgresql://user:pass@host:port/db)
   DB_HOST=$(echo "$DATABASE_URL" | sed -n 's|.*@\([^:]*\):.*|\1|p')
   if [ -z "$DB_HOST" ]; then
-    DB_HOST="testtool-postgres"
+    DB_HOST="qauthority-postgres"
   fi
 fi
 
@@ -20,7 +20,7 @@ max_attempts=30
 attempt=0
 
 while [ $attempt -lt $max_attempts ]; do
-  if PGPASSWORD=postgres psql -h "$DB_HOST" -U postgres -d testtool -c "SELECT 1" > /dev/null 2>&1; then
+  if PGPASSWORD=postgres psql -h "$DB_HOST" -U postgres -d qauthority -c "SELECT 1" > /dev/null 2>&1; then
     echo "Database is ready!"
     break
   fi
@@ -38,7 +38,7 @@ echo "Running database migrations..."
 npx prisma migrate deploy
 
 echo "Checking if seed is needed..."
-admin_count=$(PGPASSWORD=postgres psql -h "$DB_HOST" -U postgres -d testtool -t -c "SELECT COUNT(*) FROM users WHERE email = '$ADMIN_EMAIL';" 2>/dev/null | tr -d ' ' | tr -d '\n')
+admin_count=$(PGPASSWORD=postgres psql -h "$DB_HOST" -U postgres -d qauthority -t -c "SELECT COUNT(*) FROM users WHERE email = '$ADMIN_EMAIL';" 2>/dev/null | tr -d ' ' | tr -d '\n')
 
 if [ -z "$admin_count" ] || [ "$admin_count" = "0" ]; then
   echo "Running database seed..."
@@ -47,5 +47,5 @@ else
   echo "Database already seeded, skipping..."
 fi
 
-echo "Starting TestTool backend..."
+echo "Starting QAuthority backend..."
 exec node dist/index.js

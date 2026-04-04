@@ -49,6 +49,8 @@ export async function bugRoutes(app: FastifyInstance) {
             assignedToId: { type: "string" },
             externalId: { type: "string" },
             externalUrl: { type: "string" },
+            actualResult: { type: "string" },
+            expectedResult: { type: "string" },
           },
         },
         response: { 201: { type: "object", additionalProperties: true } },
@@ -67,6 +69,8 @@ export async function bugRoutes(app: FastifyInstance) {
         assignedToId?: string
         externalId?: string
         externalUrl?: string
+        actualResult?: string
+        expectedResult?: string
       }
 
       const bug = await defectService.create({
@@ -81,6 +85,8 @@ export async function bugRoutes(app: FastifyInstance) {
         assignedToId: body.assignedToId,
         externalId: body.externalId,
         externalUrl: body.externalUrl,
+        actualResult: body.actualResult,
+        expectedResult: body.expectedResult,
       })
 
       return reply.status(201).send(bug)

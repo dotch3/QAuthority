@@ -1,12 +1,137 @@
 "use client"
-import { useEffect, useState } from 'react'
-import { useTranslations } from "next-intl"
-import { useProject } from '@/contexts/ProjectContext'
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
-import { toast } from 'sonner'
-import { Workflow, Plus, Download, Edit } from 'lucide-react'
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { api } from "@/lib/api"
+import { useProject } from "@/contexts/ProjectContext"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  ChevronDown, ChevronRight, Workflow, CheckCircle2, Zap, GitBranch,
+  ShieldCheck, ArrowLeftRight, BarChart3, Plus, Edit, Trash2, Download, Copy,
+  FileJson, Layers,
+} from "lucide-react"
+
+// ── Process Template types & config ─────────────────────────────────────────
+
+interface ProcessStep {
+  order: number
+  name: string
+  description: string
+  type: string
+}
+
+interface ProcessTemplate {
+  id: string
+  name: string
+  description?: string
+  category: string
+  steps: ProcessStep[]
+  isSystem: boolean
+}
+
+const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
+  agile:         { label: "Agile",       icon: CheckCircle2,   color: "bg-green-500/10 text-green-700 border-green-500/20" },
+  waterfall:     { label: "Waterfall",   icon: GitBranch,      color: "bg-blue-500/10 text-blue-700 border-blue-500/20" },
+  cicd:          { label: "CI/CD",       icon: Zap,            color: "bg-purple-500/10 text-purple-700 border-purple-500/20" },
+  "shift-left":  { label: "Shift-Left",  icon: ArrowLeftRight, color: "bg-orange-500/10 text-orange-700 border-orange-500/20" },
+  "shift-right": { label: "Shift-Right", icon: ArrowLeftRight, color: "bg-teal-500/10 text-teal-700 border-teal-500/20" },
+  rbt:           { label: "Risk-Based",  icon: ShieldCheck,    color: "bg-red-500/10 text-red-700 border-red-500/20" },
+}
+
+const STEP_TYPE_COLOR: Record<string, string> = {
+  meeting:     "bg-blue-500/10 text-blue-600",
+  analysis:    "bg-yellow-500/10 text-yellow-700",
+  planning:    "bg-indigo-500/10 text-indigo-600",
+  execution:   "bg-green-500/10 text-green-700",
+  testing:     "bg-teal-500/10 text-teal-700",
+  review:      "bg-gray-500/10 text-gray-600",
+  design:      "bg-purple-500/10 text-purple-700",
+  automated:   "bg-cyan-500/10 text-cyan-700",
+  trigger:     "bg-orange-500/10 text-orange-700",
+  gate:        "bg-red-500/10 text-red-700",
+  release:     "bg-green-600/10 text-green-800",
+  monitoring:  "bg-slate-500/10 text-slate-600",
+  approval:    "bg-amber-500/10 text-amber-700",
+  development: "bg-violet-500/10 text-violet-700",
+  reporting:   "bg-rose-500/10 text-rose-700",
+}
+
+function ProcessCard({ template }: { template: ProcessTemplate }) {
+  const [expanded, setExpanded] = useState(false)
+  const cfg = CATEGORY_CONFIG[template.category] ?? { label: template.category, icon: Workflow, color: "bg-gray-500/10 text-gray-600 border-gray-500/20" }
+  const Icon = cfg.icon
+
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader
+        className="cursor-pointer select-none py-4 hover:bg-muted/40 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 rounded-md bg-muted flex-shrink-0">
+              <Icon className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <CardTitle className="text-base">{template.name}</CardTitle>
+              {template.description && (
+                <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{template.description}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge variant="outline" className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{template.steps.length} steps</span>
+            {expanded
+              ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+          </div>
+        </div>
+      </CardHeader>
+
+      {expanded && (
+        <CardContent className="pt-0 pb-4">
+          {template.description && (
+            <p className="text-sm text-muted-foreground mb-4 border-t pt-3">{template.description}</p>
+          )}
+          <ol className="space-y-2">
+            {template.steps.map((step) => (
+              <li key={step.order} className="flex gap-3 items-start">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground mt-0.5">
+                  {step.order}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium">{step.name}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STEP_TYPE_COLOR[step.type] ?? "bg-gray-100 text-gray-600"}`}>
+                      {step.type}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{step.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </CardContent>
+      )}
+    </Card>
+  )
+}
+
+// ── My Workflows ─────────────────────────────────────────────────────────────
 
 interface QAWorkflow {
   id: string
@@ -14,122 +139,444 @@ interface QAWorkflow {
   description?: string
   blocks?: any[]
   edges?: any[]
-  createdAt: string
   updatedAt: string
 }
 
-export default function ProcessesPage() {
-  const t = useTranslations('governance')
-  const { selectedProject } = useProject()
+interface FullQAWorkflow extends QAWorkflow {
+  blocks: { id: string; type: string; label: string; posX: number; posY: number }[]
+  edges: { id: string; sourceBlockId: string; targetBlockId: string; label?: string }[]
+}
+
+// Step type → ReactFlow block type mapping
+const STEP_BLOCK_MAP: Record<string, string> = {
+  trigger: 'SUBPROCESS', automated: 'SUBPROCESS', development: 'SUBPROCESS',
+  planning: 'SUBPROCESS', testing: 'SANITY_SMOKE', gate: 'DECISION',
+  release: 'SIGN_OFF', approval: 'SIGN_OFF', monitoring: 'SUBPROCESS',
+  meeting: 'BRAINSTORMING', analysis: 'RISK_ANALYSIS', design: 'ORACLE_DEFINITION',
+  review: 'NOTE', reporting: 'NOTE',
+}
+
+function MyWorkflowsTab({ projectId, templates }: { projectId: string; templates: ProcessTemplate[] }) {
+  const router = useRouter()
   const [workflows, setWorkflows] = useState<QAWorkflow[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [creatingFromTmpl, setCreatingFromTmpl] = useState<string | null>(null)
+  const [newDialogOpen, setNewDialogOpen] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [creating, setCreating] = useState(false)
+  const [jsonDialog, setJsonDialog] = useState<{ title: string; content: string } | null>(null)
 
   useEffect(() => {
-    if (selectedProject) {
-      fetchWorkflows()
-    } else {
-      setWorkflows([])
-      setIsLoading(false)
-    }
-  }, [selectedProject])
-
-  const fetchWorkflows = async () => {
-    if (!selectedProject) return
     setIsLoading(true)
-    try {
-      const data = await api.get<QAWorkflow[]>(`/workflows/project/${selectedProject.id}`)
-      setWorkflows(data)
-    } catch (err) {
-      console.error('Failed to fetch workflows:', err)
-      toast.error('Failed to load workflows')
-    } finally {
-      setIsLoading(false)
-    }
+    api.get<QAWorkflow[]>(`/workflows/project/${projectId}`)
+      .then(setWorkflows)
+      .catch(console.error)
+      .finally(() => setIsLoading(false))
+  }, [projectId])
+
+  const openNewDialog = () => {
+    setNewName("New QA Workflow")
+    setNewDialogOpen(true)
   }
 
   const createNew = async () => {
-    if (!selectedProject) {
-      toast.error('Select a project first')
-      return
-    }
+    if (!newName.trim()) return
+    setCreating(true)
     try {
-      const res = await api.post<QAWorkflow>('/workflows', {
-        name: 'New QA Process',
-        projectId: selectedProject.id,
+      const res = await api.post<QAWorkflow>("/workflows", {
+        name: newName.trim(),
+        projectId,
         blocks: [],
         edges: [],
       })
+      setNewDialogOpen(false)
       router.push(`/governance/processes/${res.id}`)
-    } catch (err) {
-      console.error('Failed to create workflow:', err)
-      toast.error('Failed to create workflow')
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create workflow")
+    } finally {
+      setCreating(false)
     }
   }
 
-  const exportMermaid = (id: string) => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'
-    const token = localStorage.getItem('access_token')
-    window.open(`${baseUrl}/workflows/${id}/export/mermaid?token=${token}`, '_blank')
+  const duplicateWorkflow = async (wf: QAWorkflow) => {
+    setDuplicating(wf.id)
+    try {
+      // 1. Fetch full data
+      const full = await api.get<FullQAWorkflow>(`/workflows/${wf.id}`)
+      // 2. Create blank workflow
+      const created = await api.post<QAWorkflow>("/workflows", {
+        name: `Copy of ${full.name}`,
+        projectId,
+        blocks: [],
+        edges: [],
+      })
+      // 3. Save with blocks + edges (saveWorkflow remaps IDs)
+      await api.put(`/workflows/${created.id}`, {
+        name: `Copy of ${full.name}`,
+        blocks: full.blocks.map(b => ({ id: b.id, type: b.type, label: b.label, posX: b.posX, posY: b.posY })),
+        edges: full.edges.map(e => ({ sourceBlockId: e.sourceBlockId, targetBlockId: e.targetBlockId, label: e.label })),
+      })
+      const updated = await api.get<QAWorkflow>(`/workflows/${created.id}`)
+      setWorkflows(prev => [updated, ...prev])
+      toast.success(`Duplicated as "${updated.name}"`)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to duplicate workflow")
+    } finally {
+      setDuplicating(null)
+    }
   }
 
-  if (!selectedProject) {
+  const deleteWorkflow = async (id: string) => {
+    setDeleting(id)
+    try {
+      await api.delete(`/workflows/${id}`)
+      setWorkflows((prev) => prev.filter((w) => w.id !== id))
+      toast.success("Workflow deleted")
+    } catch {
+      toast.error("Failed to delete workflow")
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const exportMermaid = async (wf: QAWorkflow) => {
+    try {
+      const text = await api.get<string>(`/workflows/${wf.id}/export/mermaid`)
+      const blob = new Blob([text as unknown as string], { type: "text/plain" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${wf.name.replace(/\s+/g, "-").toLowerCase()}.md`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to export Mermaid")
+    }
+  }
+
+  const showWorkflowJson = async (wf: QAWorkflow) => {
+    try {
+      const full = await api.get<FullQAWorkflow>(`/workflows/${wf.id}`)
+      setJsonDialog({
+        title: wf.name,
+        content: JSON.stringify({ name: full.name, blocks: full.blocks, edges: full.edges }, null, 2),
+      })
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to load workflow data")
+    }
+  }
+
+  const showTemplateJson = (tmpl: ProcessTemplate) => {
+    setJsonDialog({
+      title: tmpl.name,
+      content: JSON.stringify({ name: tmpl.name, category: tmpl.category, steps: tmpl.steps }, null, 2),
+    })
+  }
+
+  const createFromTemplate = async (tmpl: ProcessTemplate) => {
+    setCreatingFromTmpl(tmpl.id)
+    try {
+      // Create blank workflow
+      const created = await api.post<QAWorkflow>("/workflows", {
+        name: tmpl.name,
+        projectId,
+        blocks: [],
+        edges: [],
+      })
+      // Build blocks with temp IDs; edges link sequentially
+      const blocks = tmpl.steps.map((s, i) => ({
+        id: `tmp-${i}`,
+        type: STEP_BLOCK_MAP[s.type] ?? 'SUBPROCESS',
+        label: s.name,
+        posX: 200,
+        posY: i * 160,
+      }))
+      const edges = blocks.slice(0, -1).map((b, i) => ({
+        sourceBlockId: b.id,
+        targetBlockId: `tmp-${i + 1}`,
+      }))
+      await api.put(`/workflows/${created.id}`, { name: tmpl.name, blocks, edges })
+      router.push(`/governance/processes/${created.id}`)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create workflow from template")
+    } finally {
+      setCreatingFromTmpl(null)
+    }
+  }
+
+  if (isLoading) {
     return (
-      <div className="p-6 max-w-4xl">
-        <h1 className="text-2xl font-bold mb-4">{t('processDesigner')}</h1>
-        <p className="text-muted-foreground">{t('selectProject')}</p>
+      <div className="space-y-2">
+        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
       </div>
     )
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Workflow className="h-6 w-6" />
-            {t('processDesigner')}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('processDesignerDesc')}
-          </p>
+    <>
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <Button onClick={openNewDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Workflow
+          </Button>
         </div>
-        <Button onClick={createNew}>
-          <Plus className="h-4 w-4 mr-1" />
-          {t('newProcess')}
-        </Button>
+
+        {/* Custom workflows */}
+        {workflows.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Workflow className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium mb-1">No custom workflows yet</p>
+              <p className="text-sm text-muted-foreground mb-4">Create from scratch or use a template below</p>
+              <Button onClick={openNewDialog}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create your first workflow
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {workflows.map((wf) => (
+              <div key={wf.id} className="border rounded-lg p-4 flex items-center justify-between gap-4 bg-card">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{wf.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {wf.blocks?.length ?? 0} blocks · {wf.edges?.length ?? 0} connections
+                    · Updated {new Date(wf.updatedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button size="sm" variant="outline" onClick={() => showWorkflowJson(wf)}>
+                    <FileJson className="h-3.5 w-3.5 mr-1" />
+                    JSON
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => exportMermaid(wf)}>
+                    <Download className="h-3.5 w-3.5 mr-1" />
+                    Mermaid
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={duplicating === wf.id}
+                    onClick={() => duplicateWorkflow(wf)}
+                  >
+                    <Copy className="h-3.5 w-3.5 mr-1" />
+                    {duplicating === wf.id ? "Copying…" : "Copy"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => router.push(`/governance/processes/${wf.id}`)}>
+                    <Edit className="h-3.5 w-3.5 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    disabled={deleting === wf.id}
+                    onClick={() => deleteWorkflow(wf.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* System templates — view as JSON or open in canvas */}
+        {templates.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Layers className="h-4 w-4" />
+              System Templates
+            </h3>
+            <div className="space-y-2">
+              {templates.map((tmpl) => {
+                const cfg = CATEGORY_CONFIG[tmpl.category]
+                return (
+                  <div key={tmpl.id} className="border rounded-lg p-4 flex items-center justify-between gap-4 bg-card">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium truncate">{tmpl.name}</p>
+                        {cfg && (
+                          <Badge variant="outline" className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{tmpl.steps.length} steps · read-only</p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button size="sm" variant="outline" onClick={() => showTemplateJson(tmpl)}>
+                        <FileJson className="h-3.5 w-3.5 mr-1" />
+                        JSON
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={creatingFromTmpl === tmpl.id}
+                        onClick={() => createFromTemplate(tmpl)}
+                      >
+                        <Edit className="h-3.5 w-3.5 mr-1" />
+                        {creatingFromTmpl === tmpl.id ? "Creating…" : "Open in Canvas"}
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground">{t('loading')}</div>
-      ) : workflows.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          {t('noProcesses')}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {workflows.map(wf => (
-            <div key={wf.id} className="border rounded-lg p-4 flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">{wf.name}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {wf.blocks?.length ?? 0} {t('blocks')} • {wf.edges?.length ?? 0} {t('connections')}
-                  • Updated {new Date(wf.updatedAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => exportMermaid(wf.id)}>
-                  <Download className="h-4 w-4 mr-1" />
-                  Mermaid
-                </Button>
-                <Button size="sm" onClick={() => router.push(`/governance/processes/${wf.id}`)}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* New workflow dialog */}
+      <Dialog open={newDialogOpen} onOpenChange={(open) => { if (!open) setNewDialogOpen(false) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New Workflow</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label htmlFor="workflow-name">Name</Label>
+            <Input
+              id="workflow-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") createNew() }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Cancel</Button>
+            <Button onClick={createNew} disabled={creating || !newName.trim()}>
+              {creating ? "Creating…" : "Create"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* JSON view dialog */}
+      <Dialog open={!!jsonDialog} onOpenChange={(open) => { if (!open) setJsonDialog(null) }}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileJson className="h-4 w-4" />
+              {jsonDialog?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto min-h-0">
+            <pre className="text-xs bg-muted rounded-md p-4 overflow-auto whitespace-pre-wrap break-all font-mono leading-relaxed">
+              {jsonDialog?.content}
+            </pre>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (jsonDialog) {
+                  navigator.clipboard.writeText(jsonDialog.content)
+                  toast.success("Copied to clipboard")
+                }
+              }}
+            >
+              Copy
+            </Button>
+            <Button onClick={() => setJsonDialog(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+// ── Main page ────────────────────────────────────────────────────────────────
+
+export default function ProcessesPage() {
+  const { selectedProject } = useProject()
+  const [templates, setTemplates] = useState<ProcessTemplate[]>([])
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(true)
+  const [tab, setTab] = useState<"templates" | "workflows">("templates")
+
+  useEffect(() => {
+    api.get<ProcessTemplate[]>("/process-templates")
+      .then(setTemplates)
+      .catch(console.error)
+      .finally(() => setIsLoadingTemplates(false))
+  }, [])
+
+  const byCategory = templates.reduce<Record<string, ProcessTemplate[]>>((acc, t) => {
+    acc[t.category] = acc[t.category] ?? []
+    acc[t.category].push(t)
+    return acc
+  }, {})
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <BarChart3 className="h-7 w-7" />
+          QA Processes
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Standard methodology templates and custom workflow diagrams
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 border-b">
+        {(["templates", "workflows"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              tab === t
+                ? "border-foreground text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t === "templates" ? "Methodology Templates" : "My Workflows"}
+          </button>
+        ))}
+      </div>
+
+      {/* Templates tab */}
+      {tab === "templates" && (
+        isLoadingTemplates ? (
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {Object.entries(byCategory).map(([category, group]) => {
+              const cfg = CATEGORY_CONFIG[category]
+              return (
+                <div key={category} className="space-y-3">
+                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    {cfg?.label ?? category}
+                  </h2>
+                  <div className="space-y-2">
+                    {group.map((t) => <ProcessCard key={t.id} template={t} />)}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )
+      )}
+
+      {/* My Workflows tab */}
+      {tab === "workflows" && (
+        selectedProject ? (
+          <MyWorkflowsTab projectId={selectedProject.id} templates={templates} />
+        ) : (
+          <Card>
+            <CardContent className="p-12 text-center text-muted-foreground">
+              <Workflow className="h-10 w-10 mx-auto mb-3" />
+              <p>Select a project to view and create custom workflows</p>
+            </CardContent>
+          </Card>
+        )
       )}
     </div>
   )

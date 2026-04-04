@@ -18,6 +18,9 @@ export interface UpdateTestPlanData {
   statusId?: string
   startDate?: Date | null
   endDate?: Date | null
+  idPrefix?: string | null
+  idInitialNumber?: number | null
+  bugPrefix?: string | null
 }
 
 async function checkProjectAccess(projectId: string, userId: string, roleId: string): Promise<boolean> {
@@ -66,16 +69,31 @@ export class TestPlanService {
       throw new ForbiddenError("You don't have access to this project")
     }
 
-    return prisma.testPlan.findMany({
+    const plans = await prisma.testPlan.findMany({
       where: { projectId },
       include: {
         _count: {
           select: { suites: true, executions: true },
         },
         status: true,
+        suites: {
+          select: {
+            _count: {
+              select: { cases: true },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     })
+
+    return plans.map(plan => ({
+      ...plan,
+      _count: {
+        ...plan._count,
+        cases: plan.suites.reduce((acc, suite) => acc + (suite._count?.cases || 0), 0),
+      },
+    }))
   }
 
   async update(id: string, data: UpdateTestPlanData, userId: string, roleId: string): Promise<TestPlan> {
@@ -97,6 +115,9 @@ export class TestPlanService {
         statusId: data.statusId,
         startDate: data.startDate,
         endDate: data.endDate,
+        idPrefix: data.idPrefix,
+        idInitialNumber: data.idInitialNumber,
+        bugPrefix: data.bugPrefix,
       },
       include: { status: true },
     })

@@ -81,6 +81,7 @@
     "projects": "Projects",
     "profile": "Profile",
     "logout": "Logout",
+    "testRuns": "Test Runs",
     "moduleTestManagement": "Test Command",
     "moduleGovernance": "QA Governance",
     "moduleReports": "Reports",
