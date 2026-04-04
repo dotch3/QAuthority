@@ -9,9 +9,18 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import {
   ChevronDown, ChevronRight, Workflow, CheckCircle2, Zap, GitBranch,
-  ShieldCheck, ArrowLeftRight, BarChart3, Plus, Edit, Trash2, Download,
+  ShieldCheck, ArrowLeftRight, BarChart3, Plus, Edit, Trash2, Download, Copy,
 } from "lucide-react"
 
 // ── Process Template types & config ─────────────────────────────────────────
@@ -132,11 +141,20 @@ interface QAWorkflow {
   updatedAt: string
 }
 
+interface FullQAWorkflow extends QAWorkflow {
+  blocks: { id: string; type: string; label: string; posX: number; posY: number }[]
+  edges: { id: string; sourceBlockId: string; targetBlockId: string; label?: string }[]
+}
+
 function MyWorkflowsTab({ projectId }: { projectId: string }) {
   const router = useRouter()
   const [workflows, setWorkflows] = useState<QAWorkflow[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [newDialogOpen, setNewDialogOpen] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     setIsLoading(true)
@@ -146,17 +164,55 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
       .finally(() => setIsLoading(false))
   }, [projectId])
 
+  const openNewDialog = () => {
+    setNewName("New QA Workflow")
+    setNewDialogOpen(true)
+  }
+
   const createNew = async () => {
+    if (!newName.trim()) return
+    setCreating(true)
     try {
       const res = await api.post<QAWorkflow>("/workflows", {
-        name: "New QA Workflow",
+        name: newName.trim(),
         projectId,
         blocks: [],
         edges: [],
       })
+      setNewDialogOpen(false)
       router.push(`/governance/processes/${res.id}`)
-    } catch {
-      toast.error("Failed to create workflow")
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create workflow")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const duplicateWorkflow = async (wf: QAWorkflow) => {
+    setDuplicating(wf.id)
+    try {
+      // 1. Fetch full data
+      const full = await api.get<FullQAWorkflow>(`/workflows/${wf.id}`)
+      // 2. Create blank workflow
+      const created = await api.post<QAWorkflow>("/workflows", {
+        name: `Copy of ${full.name}`,
+        projectId,
+        blocks: [],
+        edges: [],
+      })
+      // 3. Save with blocks + edges (saveWorkflow remaps IDs)
+      await api.put(`/workflows/${created.id}`, {
+        name: `Copy of ${full.name}`,
+        blocks: full.blocks.map(b => ({ id: b.id, type: b.type, label: b.label, posX: b.posX, posY: b.posY })),
+        edges: full.edges.map(e => ({ sourceBlockId: e.sourceBlockId, targetBlockId: e.targetBlockId, label: e.label })),
+      })
+      const updated = await api.get<QAWorkflow>(`/workflows/${created.id}`)
+      setWorkflows(prev => [updated, ...prev])
+      toast.success(`Duplicated as "${updated.name}"`)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to duplicate workflow")
+    } finally {
+      setDuplicating(null)
     }
   }
 
@@ -173,10 +229,21 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
     }
   }
 
-  const exportMermaid = (id: string) => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1"
-    const token = localStorage.getItem("access_token")
-    window.open(`${baseUrl}/workflows/${id}/export/mermaid?token=${token}`, "_blank")
+  const exportMermaid = async (wf: QAWorkflow) => {
+    try {
+      const text = await api.get<string>(`/workflows/${wf.id}/export/mermaid`)
+      const blob = new Blob([text as unknown as string], { type: "text/plain" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${wf.name.replace(/\s+/g, "-").toLowerCase()}.md`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to export Mermaid")
+    }
   }
 
   if (isLoading) {
@@ -188,63 +255,98 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={createNew}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Workflow
-        </Button>
+    <>
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <Button onClick={openNewDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Workflow
+          </Button>
+        </div>
+
+        {workflows.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Workflow className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium mb-1">No workflows yet</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create a custom drag-and-drop QA workflow diagram for this project
+              </p>
+              <Button onClick={openNewDialog}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create your first workflow
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {workflows.map((wf) => (
+              <div key={wf.id} className="border rounded-lg p-4 flex items-center justify-between gap-4 bg-card">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{wf.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {wf.blocks?.length ?? 0} blocks · {wf.edges?.length ?? 0} connections
+                    · Updated {new Date(wf.updatedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button size="sm" variant="outline" onClick={() => exportMermaid(wf)}>
+                    <Download className="h-3.5 w-3.5 mr-1" />
+                    Mermaid
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={duplicating === wf.id}
+                    onClick={() => duplicateWorkflow(wf)}
+                  >
+                    <Copy className="h-3.5 w-3.5 mr-1" />
+                    {duplicating === wf.id ? "Copying…" : "Copy"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => router.push(`/governance/processes/${wf.id}`)}>
+                    <Edit className="h-3.5 w-3.5 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    disabled={deleting === wf.id}
+                    onClick={() => deleteWorkflow(wf.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {workflows.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Workflow className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="font-medium mb-1">No workflows yet</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Create a custom drag-and-drop QA workflow diagram for this project
-            </p>
-            <Button onClick={createNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create your first workflow
+      <Dialog open={newDialogOpen} onOpenChange={(open) => { if (!open) setNewDialogOpen(false) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New Workflow</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label htmlFor="workflow-name">Name</Label>
+            <Input
+              id="workflow-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") createNew() }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Cancel</Button>
+            <Button onClick={createNew} disabled={creating || !newName.trim()}>
+              {creating ? "Creating…" : "Create"}
             </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {workflows.map((wf) => (
-            <div key={wf.id} className="border rounded-lg p-4 flex items-center justify-between gap-4 bg-card">
-              <div className="min-w-0">
-                <p className="font-medium truncate">{wf.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {wf.blocks?.length ?? 0} blocks · {wf.edges?.length ?? 0} connections
-                  · Updated {new Date(wf.updatedAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button size="sm" variant="outline" onClick={() => exportMermaid(wf.id)}>
-                  <Download className="h-3.5 w-3.5 mr-1" />
-                  Mermaid
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => router.push(`/governance/processes/${wf.id}`)}>
-                  <Edit className="h-3.5 w-3.5 mr-1" />
-                  Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive"
-                  disabled={deleting === wf.id}
-                  onClick={() => deleteWorkflow(wf.id)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
