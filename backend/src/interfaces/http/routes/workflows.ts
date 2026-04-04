@@ -23,7 +23,7 @@ export async function workflowRoutes(app: FastifyInstance) {
     const body = req.body as any
     const workflow = await workflowService.createWorkflow({
       ...body,
-      createdById: (req.user as any).id,
+      createdById: (req.user as any).userId,
     })
     return reply.code(201).send(workflow)
   })

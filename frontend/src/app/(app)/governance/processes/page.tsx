@@ -21,6 +21,7 @@ import {
 import {
   ChevronDown, ChevronRight, Workflow, CheckCircle2, Zap, GitBranch,
   ShieldCheck, ArrowLeftRight, BarChart3, Plus, Edit, Trash2, Download, Copy,
+  FileJson, Layers,
 } from "lucide-react"
 
 // ── Process Template types & config ─────────────────────────────────────────
@@ -146,15 +147,26 @@ interface FullQAWorkflow extends QAWorkflow {
   edges: { id: string; sourceBlockId: string; targetBlockId: string; label?: string }[]
 }
 
-function MyWorkflowsTab({ projectId }: { projectId: string }) {
+// Step type → ReactFlow block type mapping
+const STEP_BLOCK_MAP: Record<string, string> = {
+  trigger: 'SUBPROCESS', automated: 'SUBPROCESS', development: 'SUBPROCESS',
+  planning: 'SUBPROCESS', testing: 'SANITY_SMOKE', gate: 'DECISION',
+  release: 'SIGN_OFF', approval: 'SIGN_OFF', monitoring: 'SUBPROCESS',
+  meeting: 'BRAINSTORMING', analysis: 'RISK_ANALYSIS', design: 'ORACLE_DEFINITION',
+  review: 'NOTE', reporting: 'NOTE',
+}
+
+function MyWorkflowsTab({ projectId, templates }: { projectId: string; templates: ProcessTemplate[] }) {
   const router = useRouter()
   const [workflows, setWorkflows] = useState<QAWorkflow[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [creatingFromTmpl, setCreatingFromTmpl] = useState<string | null>(null)
   const [newDialogOpen, setNewDialogOpen] = useState(false)
   const [newName, setNewName] = useState("")
   const [creating, setCreating] = useState(false)
+  const [jsonDialog, setJsonDialog] = useState<{ title: string; content: string } | null>(null)
 
   useEffect(() => {
     setIsLoading(true)
@@ -246,6 +258,56 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
     }
   }
 
+  const showWorkflowJson = async (wf: QAWorkflow) => {
+    try {
+      const full = await api.get<FullQAWorkflow>(`/workflows/${wf.id}`)
+      setJsonDialog({
+        title: wf.name,
+        content: JSON.stringify({ name: full.name, blocks: full.blocks, edges: full.edges }, null, 2),
+      })
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to load workflow data")
+    }
+  }
+
+  const showTemplateJson = (tmpl: ProcessTemplate) => {
+    setJsonDialog({
+      title: tmpl.name,
+      content: JSON.stringify({ name: tmpl.name, category: tmpl.category, steps: tmpl.steps }, null, 2),
+    })
+  }
+
+  const createFromTemplate = async (tmpl: ProcessTemplate) => {
+    setCreatingFromTmpl(tmpl.id)
+    try {
+      // Create blank workflow
+      const created = await api.post<QAWorkflow>("/workflows", {
+        name: tmpl.name,
+        projectId,
+        blocks: [],
+        edges: [],
+      })
+      // Build blocks with temp IDs; edges link sequentially
+      const blocks = tmpl.steps.map((s, i) => ({
+        id: `tmp-${i}`,
+        type: STEP_BLOCK_MAP[s.type] ?? 'SUBPROCESS',
+        label: s.name,
+        posX: 200,
+        posY: i * 160,
+      }))
+      const edges = blocks.slice(0, -1).map((b, i) => ({
+        sourceBlockId: b.id,
+        targetBlockId: `tmp-${i + 1}`,
+      }))
+      await api.put(`/workflows/${created.id}`, { name: tmpl.name, blocks, edges })
+      router.push(`/governance/processes/${created.id}`)
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create workflow from template")
+    } finally {
+      setCreatingFromTmpl(null)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -264,14 +326,13 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
           </Button>
         </div>
 
+        {/* Custom workflows */}
         {workflows.length === 0 ? (
           <Card>
-            <CardContent className="p-12 text-center">
+            <CardContent className="p-8 text-center">
               <Workflow className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="font-medium mb-1">No workflows yet</p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Create a custom drag-and-drop QA workflow diagram for this project
-              </p>
+              <p className="font-medium mb-1">No custom workflows yet</p>
+              <p className="text-sm text-muted-foreground mb-4">Create from scratch or use a template below</p>
               <Button onClick={openNewDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create your first workflow
@@ -290,6 +351,10 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
+                  <Button size="sm" variant="outline" onClick={() => showWorkflowJson(wf)}>
+                    <FileJson className="h-3.5 w-3.5 mr-1" />
+                    JSON
+                  </Button>
                   <Button size="sm" variant="outline" onClick={() => exportMermaid(wf)}>
                     <Download className="h-3.5 w-3.5 mr-1" />
                     Mermaid
@@ -321,8 +386,52 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
             ))}
           </div>
         )}
+
+        {/* System templates — view as JSON or open in canvas */}
+        {templates.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Layers className="h-4 w-4" />
+              System Templates
+            </h3>
+            <div className="space-y-2">
+              {templates.map((tmpl) => {
+                const cfg = CATEGORY_CONFIG[tmpl.category]
+                return (
+                  <div key={tmpl.id} className="border rounded-lg p-4 flex items-center justify-between gap-4 bg-card">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium truncate">{tmpl.name}</p>
+                        {cfg && (
+                          <Badge variant="outline" className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{tmpl.steps.length} steps · read-only</p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button size="sm" variant="outline" onClick={() => showTemplateJson(tmpl)}>
+                        <FileJson className="h-3.5 w-3.5 mr-1" />
+                        JSON
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={creatingFromTmpl === tmpl.id}
+                        onClick={() => createFromTemplate(tmpl)}
+                      >
+                        <Edit className="h-3.5 w-3.5 mr-1" />
+                        {creatingFromTmpl === tmpl.id ? "Creating…" : "Open in Canvas"}
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* New workflow dialog */}
       <Dialog open={newDialogOpen} onOpenChange={(open) => { if (!open) setNewDialogOpen(false) }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -343,6 +452,37 @@ function MyWorkflowsTab({ projectId }: { projectId: string }) {
             <Button onClick={createNew} disabled={creating || !newName.trim()}>
               {creating ? "Creating…" : "Create"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* JSON view dialog */}
+      <Dialog open={!!jsonDialog} onOpenChange={(open) => { if (!open) setJsonDialog(null) }}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileJson className="h-4 w-4" />
+              {jsonDialog?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto min-h-0">
+            <pre className="text-xs bg-muted rounded-md p-4 overflow-auto whitespace-pre-wrap break-all font-mono leading-relaxed">
+              {jsonDialog?.content}
+            </pre>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (jsonDialog) {
+                  navigator.clipboard.writeText(jsonDialog.content)
+                  toast.success("Copied to clipboard")
+                }
+              }}
+            >
+              Copy
+            </Button>
+            <Button onClick={() => setJsonDialog(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -428,7 +568,7 @@ export default function ProcessesPage() {
       {/* My Workflows tab */}
       {tab === "workflows" && (
         selectedProject ? (
-          <MyWorkflowsTab projectId={selectedProject.id} />
+          <MyWorkflowsTab projectId={selectedProject.id} templates={templates} />
         ) : (
           <Card>
             <CardContent className="p-12 text-center text-muted-foreground">
