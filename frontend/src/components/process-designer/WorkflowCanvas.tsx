@@ -61,6 +61,7 @@ export function WorkflowCanvas({ initialNodes = [], initialEdges = [], onSave }:
         borderRadius: '6px',
         padding: '8px 12px',
         fontSize: '12px',
+        color: '#111827',
       },
     }
     setNodes(ns => [...ns, newNode])

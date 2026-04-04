@@ -8,6 +8,19 @@ import { Node, Edge } from 'reactflow'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
+const BLOCK_COLORS: Record<string, string> = {
+  BRAINSTORMING: '#e9d5ff',
+  RISK_ANALYSIS: '#fecaca',
+  RACI_MATRIX: '#bfdbfe',
+  ORACLE_DEFINITION: '#fef08a',
+  SANITY_SMOKE: '#bbf7d0',
+  ENVIRONMENT_SETUP: '#e5e7eb',
+  SIGN_OFF: '#6ee7b7',
+  NOTE: '#fed7aa',
+  DECISION: '#a5f3fc',
+  SUBPROCESS: '#c7d2fe',
+}
+
 interface QAWorkflow {
   id: string
   name: string
@@ -89,7 +102,14 @@ export default function ProcessEditorPage() {
     id: b.id,
     position: { x: b.posX, y: b.posY },
     data: { label: b.label, blockType: b.type },
-    style: { fontSize: '12px', padding: '8px 12px', borderRadius: '6px' },
+    style: {
+      background: BLOCK_COLORS[b.type] ?? '#f3f4f6',
+      border: '1px solid #9ca3af',
+      borderRadius: '6px',
+      padding: '8px 12px',
+      fontSize: '12px',
+      color: '#111827',
+    },
   }))
 
   const initialEdges: Edge[] = workflow.edges.map((e: any) => ({
