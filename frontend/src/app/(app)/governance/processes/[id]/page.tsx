@@ -25,6 +25,7 @@ interface QAWorkflow {
   id: string
   name: string
   description?: string
+  projectId: string
   blocks: {
     id: string
     type: string
@@ -66,27 +67,47 @@ export default function ProcessEditorPage() {
     }
   }, [id, router])
 
+  const serializePayload = (name: string, nodes: Node[], edges: Edge[]) => ({
+    name,
+    blocks: nodes.map(n => ({
+      id: n.id,
+      type: n.data.blockType,
+      label: n.data.label,
+      posX: n.position.x,
+      posY: n.position.y,
+    })),
+    edges: edges.map(e => ({
+      sourceBlockId: e.source,
+      targetBlockId: e.target,
+      label: e.label?.toString() ?? null,
+    })),
+  })
+
   const handleSave = async (nodes: Node[], edges: Edge[]) => {
     try {
-      await api.put(`/workflows/${id}`, {
-        name: workflow?.name,
-        blocks: nodes.map(n => ({
-          id: n.id,
-          type: n.data.blockType,
-          label: n.data.label,
-          posX: n.position.x,
-          posY: n.position.y,
-        })),
-        edges: edges.map(e => ({
-          sourceBlockId: e.source,
-          targetBlockId: e.target,
-          label: e.label?.toString() ?? null,
-        })),
-      })
+      await api.put(`/workflows/${id}`, serializePayload(workflow!.name, nodes, edges))
       toast.success('Workflow saved')
-    } catch (err) {
-      console.error('Failed to save workflow:', err)
-      toast.error('Failed to save workflow')
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to save workflow')
+    }
+  }
+
+  const handleSaveAs = async (name: string, nodes: Node[], edges: Edge[]) => {
+    try {
+      // 1. Create a new blank workflow
+      const created = await api.post<QAWorkflow>('/workflows', {
+        name,
+        projectId: workflow!.projectId,
+        blocks: [],
+        edges: [],
+      })
+      // 2. Save content into it
+      await api.put(`/workflows/${created.id}`, serializePayload(name, nodes, edges))
+      toast.success(`Saved as "${name}"`)
+      router.push(`/governance/processes/${created.id}`)
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to save as new workflow')
+      throw err // re-throw so dialog stays open on error
     }
   }
 
@@ -137,7 +158,9 @@ export default function ProcessEditorPage() {
         <WorkflowCanvas
           initialNodes={initialNodes}
           initialEdges={initialEdges}
+          workflowName={workflow.name}
           onSave={handleSave}
+          onSaveAs={handleSaveAs}
         />
       </div>
     </div>

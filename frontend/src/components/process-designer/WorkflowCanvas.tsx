@@ -17,6 +17,15 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import { BlockPalette } from './BlockPalette'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 const BLOCK_COLORS: Record<string, string> = {
   BRAINSTORMING:     '#e9d5ff',
@@ -46,7 +55,9 @@ function makeNodeStyle(type: string) {
 interface Props {
   initialNodes?: Node[]
   initialEdges?: Edge[]
-  onSave: (nodes: Node[], edges: Edge[]) => void
+  workflowName?: string
+  onSave: (nodes: Node[], edges: Edge[]) => Promise<void> | void
+  onSaveAs?: (name: string, nodes: Node[], edges: Edge[]) => Promise<void> | void
 }
 
 let idCounter = Date.now()
@@ -56,9 +67,13 @@ function nextId() {
 
 // ── Inner component (needs ReactFlowProvider context) ────────────────────────
 
-function WorkflowCanvasInner({ initialNodes, initialEdges, onSave }: Required<Props>) {
+function WorkflowCanvasInner({ initialNodes, initialEdges, workflowName, onSave, onSaveAs }: Required<Props>) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [saving, setSaving] = useState(false)
+  const [saveAsOpen, setSaveAsOpen] = useState(false)
+  const [saveAsName, setSaveAsName] = useState('')
+  const [savingAs, setSavingAs] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const { project } = useReactFlow()
 
@@ -123,46 +138,102 @@ function WorkflowCanvasInner({ initialNodes, initialEdges, onSave }: Required<Pr
     [project, addBlock],
   )
 
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await onSave(nodes, edges)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const openSaveAs = () => {
+    setSaveAsName(workflowName ? `Copy of ${workflowName}` : 'New Workflow')
+    setSaveAsOpen(true)
+  }
+
+  const handleSaveAs = async () => {
+    if (!saveAsName.trim()) return
+    setSavingAs(true)
+    try {
+      await onSaveAs(saveAsName.trim(), nodes, edges)
+      setSaveAsOpen(false)
+    } finally {
+      setSavingAs(false)
+    }
+  }
+
   return (
-    <div className="flex h-full">
-      <BlockPalette onAdd={addBlock} />
-      <div className="flex-1 flex flex-col">
-        <div className="flex justify-end p-2 border-b gap-2 bg-background">
-          <Button size="sm" onClick={() => onSave(nodes, edges)}>
-            Save Workflow
-          </Button>
-        </div>
-        <div className="flex-1" ref={wrapperRef}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            deleteKeyCode={['Backspace', 'Delete']}
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap />
-          </ReactFlow>
+    <>
+      <div className="flex h-full">
+        <BlockPalette onAdd={addBlock} />
+        <div className="flex-1 flex flex-col">
+          <div className="flex justify-end p-2 border-b gap-2 bg-background">
+            <Button size="sm" variant="outline" onClick={openSaveAs}>
+              Save As…
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+          <div className="flex-1" ref={wrapperRef}>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              deleteKeyCode={['Backspace', 'Delete']}
+              fitView
+            >
+              <Background />
+              <Controls />
+              <MiniMap />
+            </ReactFlow>
+          </div>
         </div>
       </div>
-    </div>
+
+      <Dialog open={saveAsOpen} onOpenChange={(open) => { if (!open) setSaveAsOpen(false) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save As New Workflow</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label htmlFor="save-as-name">Name</Label>
+            <Input
+              id="save-as-name"
+              value={saveAsName}
+              onChange={(e) => setSaveAsName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveAs() }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveAsOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveAs} disabled={savingAs || !saveAsName.trim()}>
+              {savingAs ? 'Saving…' : 'Save As'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
 // ── Public export (wraps with ReactFlowProvider) ─────────────────────────────
 
-export function WorkflowCanvas({ initialNodes = [], initialEdges = [], onSave }: Props) {
+export function WorkflowCanvas({ initialNodes = [], initialEdges = [], workflowName = '', onSave, onSaveAs }: Props) {
   return (
     <ReactFlowProvider>
       <WorkflowCanvasInner
         initialNodes={initialNodes}
         initialEdges={initialEdges}
+        workflowName={workflowName}
         onSave={onSave}
+        onSaveAs={onSaveAs ?? (async () => {})}
       />
     </ReactFlowProvider>
   )
