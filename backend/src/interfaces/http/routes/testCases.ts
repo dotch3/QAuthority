@@ -215,6 +215,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
             priorityId: { type: "string" },
             typeId: { type: "string" },
             automationScriptRef: { type: "string", nullable: true },
+            externalId: { type: "string" },
             assigneeIds: { type: "array", items: { type: "string" } },
           },
         },
@@ -232,6 +233,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
         priorityId?: string
         typeId?: string
         automationScriptRef?: string | null
+        externalId?: string
         assigneeIds?: string[]
       }
 
@@ -244,6 +246,7 @@ export async function testCaseRoutes(app: FastifyInstance) {
         priorityId: body.priorityId,
         typeId: body.typeId,
         automationScriptRef: body.automationScriptRef,
+        externalId: body.externalId,
         assigneeIds: body.assigneeIds,
       }, user.userId)
     }

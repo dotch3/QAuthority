@@ -33,6 +33,7 @@ export interface UpdateTestCaseData {
   typeId?: string
   automationScriptRef?: string | null
   assigneeIds?: string[]
+  externalId?: string
 }
 
 export interface TestCaseVersion {
@@ -236,6 +237,7 @@ export class TestCaseService {
       priority: data.priorityId ? { connect: { id: data.priorityId } } : undefined,
       type: data.typeId ? { connect: { id: data.typeId } } : undefined,
       automationScriptRef: data.automationScriptRef,
+      externalId: data.externalId,
       currentVersion: { increment: 1 },
     }
 

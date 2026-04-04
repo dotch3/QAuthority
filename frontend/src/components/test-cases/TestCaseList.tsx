@@ -57,6 +57,7 @@ import { EvidenceManager } from "@/components/evidence/EvidenceManager"
 export interface TestCaseRow {
   id: string
   title: string
+  externalId?: string
   description?: string
   preconditions?: string
   notes?: string
@@ -285,9 +286,22 @@ export function TestCaseFormDialog({
               {testCase ? "Edit Test Case" : "Create Test Case"}
             </DialogTitle>
             {testCase && (
-              <p className="text-sm text-muted-foreground font-mono">
-                ID: TC-{testCase.id.substring(0, 8).toUpperCase()}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground font-mono">
+                  {testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`}
+                </p>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-foreground"
+                  title="Copy ID for CI tagging (e.g. @TC-CHK-0001 in test name)"
+                  onClick={() => {
+                    const id = testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`
+                    navigator.clipboard.writeText(`@${id}`)
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                </button>
+              </div>
             )}
             <DialogDescription>
               {testCase
@@ -1475,7 +1489,13 @@ export function TestCaseList({
                       </button>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm font-mono text-muted-foreground">TC-{testCase.id.substring(0, 8).toUpperCase()}</span>
+                      <span
+                        className="text-sm font-mono text-muted-foreground cursor-pointer hover:text-foreground"
+                        title={`Copy @${testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`} for CI tagging`}
+                        onClick={() => navigator.clipboard.writeText(`@${testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`}`)}
+                      >
+                        {testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`}
+                      </span>
                     </TableCell>
                     <TableCell
                       className="font-medium cursor-pointer hover:text-primary transition-colors max-w-[250px]"

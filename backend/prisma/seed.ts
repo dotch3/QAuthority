@@ -3,6 +3,7 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { seedGroups } from './seed/groups'
+import { seedSalesPlatform } from './seed/salesPlatform'
 
 type MetricEntry = {
   projectId: string
@@ -1183,6 +1184,8 @@ async function main() {
     })
     console.log('✓ Admin user added to System Admin group')
   }
+
+  await seedSalesPlatform()
 
   console.log('Seed completed successfully!')
   console.log(`  ${createdUsers.length} users`)
