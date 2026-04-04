@@ -1,128 +1,111 @@
-# Frontend - QAuthority UI
+# Frontend — QAuthority UI
 
-Next.js-based frontend for QAuthority, featuring a modern dark-themed interface.
+Next.js 16 frontend for QAuthority with React 19, Tailwind CSS 4, and shadcn/ui.
 
 ## Stack
 
-- **Framework**: Next.js 16
-- **UI**: React 19
-- **Styling**: Tailwind CSS 4
-- **Internationalization**: next-intl
+- **Framework**: Next.js 16 (App Router)
+- **UI**: React 19, Tailwind CSS 4, shadcn/ui, ReactFlow
 - **Icons**: Lucide React
+- **i18n**: next-intl (English default, no locale prefix in URLs)
+- **Theme**: Dark / Light / System
 
-## Prerequisites
+---
 
-- Node.js 22+
-- QAuthority Backend running on port 3001
+## Local Development Setup
 
-## Setup Environment
+### Prerequisites
 
-Copy the appropriate environment file from the root directory:
+- Node.js 20+
+- QAuthority backend running on port 3001
+
+### 1. Environment
 
 ```bash
-# For local development
-cp ../.env.local .env.local
-
-# For Docker/Podman (uses NEXT_PUBLIC_API_URL from backend)
-cp ../.env.podman .env.local
+# Create .env.local pointing to your local backend:
+echo "NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1" > .env.local
 ```
 
-## Run Development Server
+### 2. Install and start
 
 ```bash
 npm install
-npm run dev
+npm run dev   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Log in at `http://localhost:3000` with:
+- **Email:** `admin@qauthority.com`
+- **Password:** `Changeme123!`
 
-Note: The first time you access, it will redirect to `/pt-BR` (Portuguese locale).
+---
 
-## Docker/Podman Deployment
+## Docker Setup
 
-### First Time Setup
+The frontend image is built and managed from the root `docker-compose.yml`.
 
 ```bash
-# Build image
-cd ..
-podman build -t qauthority-ui:latest frontend/
+# Full stack with local DB:
+docker compose --profile local-db up
 
-# Run container
-podman run -d \
-  --name qauthority-ui \
-  -p 3000:3000 \
-  --env-file .env.podman \
-  qauthority-ui:latest
+# Full stack with external DB:
+docker compose up
 ```
 
-### After Code Changes
+`NEXT_PUBLIC_API_URL` is set via the root `.env` file and passed through Docker Compose.
+
+To rebuild after code changes:
 
 ```bash
-podman rm -f qauthority-ui
-podman build -t qauthority-ui:latest frontend/
-podman run -d \
-  --name qauthority-ui \
-  -p 3000:3000 \
-  --env-file .env.podman \
-  qauthority-ui:latest
+docker compose build qauthority-ui
+docker compose up
 ```
+
+---
 
 ## Available Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server |
+| `npm run dev` | Start dev server (http://localhost:3000) |
 | `npm run build` | Build for production |
 | `npm start` | Run production server |
 | `npm run lint` | Run ESLint |
+| `npm run lint:fix` | Auto-fix ESLint issues |
+
+---
 
 ## Project Structure
 
 ```
 src/
-├── app/                 # Next.js App Router pages
-├── components/          # React components
-│   ├── ui/              # Base UI components
-│   └── providers/       # Context providers
-├── lib/                 # Utilities
-└── styles/              # Global styles
+├── app/
+│   ├── (app)/          # Authenticated pages (layout with sidebar)
+│   │   ├── test-plans/
+│   │   ├── test-cases/
+│   │   ├── bugs/
+│   │   ├── governance/
+│   │   │   ├── kpis/
+│   │   │   └── processes/
+│   │   │       └── [id]/   # ReactFlow canvas editor
+│   │   └── …
+│   ├── login/
+│   └── layout.tsx
+├── components/
+│   ├── ui/                  # shadcn/ui base components
+│   ├── process-designer/    # WorkflowCanvas + BlockPalette (ReactFlow)
+│   ├── bugs/                # BugTable
+│   ├── test-cases/          # TestCaseList
+│   └── providers/           # AuthProvider, ProjectContext, ThemeProvider
+├── hooks/
+├── lib/
+│   └── api.ts               # Typed API client (handles JWT refresh)
+└── types/                   # TypeScript interfaces
 ```
 
-## Features
+---
 
-### Authentication
+## Key Notes
 
-- Login with email/password
-- OAuth2 integration (GitHub, Google, Microsoft)
-- Password reset flow
-- Session management
-
-### Theme
-
-Supports dark, light, and system themes. Theme preference is stored per-user.
-
-### Internationalization
-
-The app supports multiple languages via `next-intl`. Default language is Portuguese (Brazil).
-
-## Docker
-
-### Build Image
-
-```bash
-docker build -t qauthority-ui:latest frontend/
-# or
-podman build -t qauthority-ui:latest frontend/
-```
-
-### Run Container
-
-```bash
-docker run -d \
-  --name qauthority-ui \
-  -p 3000:3000 \
-  --env-file .env \
-  qauthority-ui:latest
-```
-
-For full-stack deployment, see the [root README](../README.md).
+- **No locale in URLs** — `localePrefix: 'never'` is configured; all routes are at `/path` not `/en/path`
+- **JWT tokens** — stored in `localStorage` (`access_token` + `refresh_token`); the API client auto-refreshes on 401
+- **Process Designer** — drag blocks from the left palette onto the canvas, connect nodes by dragging handles, delete with `Delete`/`Backspace`

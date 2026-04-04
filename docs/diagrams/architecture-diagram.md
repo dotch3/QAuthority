@@ -15,7 +15,7 @@ graph TB
 
     subgraph DockerNetwork["Docker Network (full-local profile)"]
         subgraph Public["public network"]
-            BE["Backend: Fastify\n:3001\nTypeScript + Prisma\nPassport.js + Winston\nSwagger/OpenAPI"]
+            BE["Backend: Fastify\n:3001\nTypeScript + Prisma\nJWT + BullMQ + Winston\nSwagger/OpenAPI"]
         end
 
         subgraph Internal["internal network"]
@@ -144,7 +144,7 @@ sequenceDiagram
         BE-->>FE: JWT token
     end
 
-    FE->>FE: Store JWT (httpOnly cookie)
+    FE->>FE: Store JWT (localStorage: access_token + refresh_token)
     FE->>BE: API requests with Authorization: Bearer <jwt>
     BE->>BE: PermissionGuard checks ROLE_PERMISSIONS (Redis cached)
 ```

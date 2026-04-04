@@ -6,16 +6,6 @@
 
 ---
 
-## Why QAuthority?
-
-Traditional test management tools track test cases. **QAuthority tracks quality.**
-
-Your QA team doesn't just run tests — they govern a quality process that spans
-multiple teams, multiple projects, and multiple stakeholders. QAuthority gives
-you the data, the dashboards, and the reports to lead that process with authority.
-
----
-
 ## Key Capabilities
 
 | Module | What it does |
@@ -23,7 +13,7 @@ you the data, the dashboards, and the reports to lead that process with authorit
 | **Test Command** | Full test lifecycle: Plans → Suites → Cases → Executions → Defects |
 | **QA Governance** | DORA metrics, OKRs (org + project), KPIs, Process Behavior Charts |
 | **Executive Dashboards** | Cross-project health scorecards, team comparisons, OKR rollup |
-| **Visual Process Designer** | Drag-and-drop QA workflow builder with Mermaid.js export |
+| **Visual Process Designer** | Drag-and-drop QA workflow builder (ReactFlow) with Mermaid export |
 | **Advanced Reporting** | PDF/DOCX/Excel reports + Prometheus/Grafana data export |
 | **AI Code Generation** | Manual test steps → Playwright/Cypress/Jest POM automation code |
 | **CI/CD Integrations** | GitHub Actions, Jenkins webhook ingestion, Jira/GitHub issue sync |
@@ -31,47 +21,20 @@ you the data, the dashboards, and the reports to lead that process with authorit
 
 ---
 
-## QA Manager Use Cases
-
-**Quarterly executive review:**
-1. Open Executive Dashboard → select "All Projects"
-2. See team health scorecards + DORA trends with Process Behavior Chart signal detection
-3. Export as DOCX Executive Briefing → present to CTO
-
-**Sprint planning:**
-1. Open OKRs → adopt org-level OKR into your project
-2. Track progress via Key Results updated after each execution cycle
-
-**Onboarding a new automation engineer:**
-1. Create a "Automation Engineer" group with AI Codegen permissions
-2. Add them to the group
-3. They select any manual test case → AI generates Playwright POM code in one click
-
-**Standardizing QA process across teams:**
-1. Open Process Designer → create a "Sprint QA Workflow"
-2. Export as Mermaid.js → embed in team wikis
-3. Import on other projects to replicate the process
-
----
-
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  QAuthority — Frontend (Next.js 16 + React 19)      │
-│  Module Rail + Contextual Sidebar + Executive Views │
+│  Frontend  (Next.js 16 + React 19)  :3000           │
 └────────────────────┬────────────────────────────────┘
-                     │ REST API
+                     │ REST API (HTTP/JSON)
 ┌────────────────────▼────────────────────────────────┐
-│  qauthority-api (Fastify 5 + TypeScript)             │
-│  Auth: JWT + OAuth2 (GitHub / Google / Microsoft)   │
-│  Queue: BullMQ + Redis (reports, metric collection) │
+│  Backend  (Fastify 5 + TypeScript)  :3001           │
+│  Auth: JWT  |  Queue: BullMQ + Redis                │
 └────────────────────┬────────────────────────────────┘
                      │ Prisma ORM
 ┌────────────────────▼────────────────────────────────┐
-│  PostgreSQL 16                                      │
-│  30+ tables: test hierarchy, metrics, OKRs,         │
-│  workflows, AI configs, CI builds, groups           │
+│  PostgreSQL 16  (DB: qauthority)                    │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -79,65 +42,134 @@ you the data, the dashboards, and the reports to lead that process with authorit
 
 ## Quick Start
 
-### Prerequisites
-- Docker + Docker Compose
-- Node.js 20+
+### Option A — Local Development (no Docker)
 
-### 1. Clone and configure
+**Prerequisites:** Node.js 20+, PostgreSQL 16+, Redis 7+
 
-```bash
-git clone https://github.com/your-org/qauthority.git
-cd qauthority
-cp .env.example .env.local
-# Edit .env.local with your database URL, JWT secret, and OAuth credentials
-```
-
-### 2. Start services
+**1. Clone and configure**
 
 ```bash
-docker-compose up -d
+git clone https://github.com/dotch3/QAuthority.git
+cd QAuthority
+cp .env.example .env
 ```
 
-### 3. First-run setup
+Edit `.env` and set at minimum:
 
-Open `http://localhost:3000/setup` and complete the Setup Wizard:
-- System health check
-- Language & locale (default: English)
-- Create admin account
-- Seed default groups (System Admin, QA Manager, QA Lead, QA Engineer, etc.)
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/qauthority
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=change-me-to-a-strong-secret-min-32-chars
+ENCRYPTION_KEY=<64-char hex string>
+ADMIN_EMAIL=admin@qauthority.com
+ADMIN_PASSWORD=Changeme123!
+```
 
-### 4. Log in
+**2. Backend**
 
-Open `http://localhost:3000/login` — use the admin credentials from setup.
+```bash
+cd backend
+cp ../.env .env
+npm install
+npx prisma migrate deploy   # apply all migrations
+npx prisma db seed          # seed admin user, groups, demo project
+npm run dev                 # starts on http://localhost:3001
+```
+
+**3. Frontend**
+
+```bash
+cd frontend
+echo "NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1" > .env.local
+npm install
+npm run dev                 # starts on http://localhost:3000
+```
+
+**4. Log in**
+
+Open `http://localhost:3000` and log in with:
+- **Email:** `admin@qauthority.com`
+- **Password:** `Changeme123!`
+
+---
+
+### Option B — Docker (full stack)
+
+**Prerequisites:** Docker + Docker Compose
+
+**1. Clone and configure**
+
+```bash
+git clone https://github.com/dotch3/QAuthority.git
+cd QAuthority
+cp .env.example .env
+# Edit .env — set JWT_SECRET, ENCRYPTION_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
+```
+
+**2a. Start everything including local PostgreSQL + Redis**
+
+```bash
+docker compose --profile local-db up
+```
+
+This starts: PostgreSQL, Redis, API (auto-runs migrations + seed on first boot), Frontend, and a nightly backup container.
+
+**2b. Use an external database (Supabase / Neon / RDS)**
+
+```bash
+# Set DATABASE_URL in .env to your cloud DB connection string, then:
+docker compose up
+```
+
+**3. Log in**
+
+Open `http://localhost:3000` — credentials are the `ADMIN_EMAIL` / `ADMIN_PASSWORD` values from your `.env`.
 
 ---
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `REDIS_URL` | Redis connection string | Yes |
-| `JWT_SECRET` | JWT signing secret (min 32 chars) | Yes |
-| `AI_KEY_ENCRYPTION_SECRET` | AES-256 key for AI API key storage (32 chars) | Yes |
-| `GITHUB_CLIENT_ID` | GitHub OAuth app client ID | Optional |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret | Optional |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | Optional |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | Optional |
-| `REPORT_OUTPUT_DIR` | Directory for generated report files | Optional |
-| `SMTP_HOST` | SMTP host for email notifications | Optional |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `REDIS_URL` | Yes | Redis connection string |
+| `JWT_SECRET` | Yes | JWT signing secret (min 32 chars) |
+| `ENCRYPTION_KEY` | Yes | 64-char hex key for AES-256-GCM (AI key storage) |
+| `ADMIN_EMAIL` | Yes | First-boot admin email |
+| `ADMIN_PASSWORD` | Yes | First-boot admin password |
+| `AUTH_MODE` | No | `local` \| `oauth` \| `both` (default: `both`) |
+| `ALLOW_REGISTRATION` | No | Allow self-registration (default: `false`) |
+| `NEXT_PUBLIC_API_URL` | Yes (frontend) | Backend API URL (e.g. `http://localhost:3001/api/v1`) |
+| `OAUTH_GITHUB_CLIENT_ID` | No | GitHub OAuth app ID |
+| `OAUTH_GITHUB_CLIENT_SECRET` | No | GitHub OAuth app secret |
+| `OAUTH_GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
+| `OAUTH_GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
+| `SMTP_HOST` | No | SMTP host for email notifications |
+
+See `.env.example` for the full list.
+
+---
+
+## Database Reset (development only)
+
+```bash
+cd backend
+npx prisma migrate reset --force   # drops DB, re-runs all migrations + seed
+```
 
 ---
 
 ## Tech Stack
 
-- **Backend:** Node.js + TypeScript + Fastify 5 + Prisma 6
-- **Frontend:** Next.js 16 + React 19 + Tailwind CSS 4 + shadcn/ui
-- **Database:** PostgreSQL 16
-- **Queue:** BullMQ 5 + Redis 7
-- **Auth:** JWT + OAuth2
-- **i18n:** next-intl (English / Portuguese / Spanish)
-- **Testing:** Vitest 2
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16, React 19, Tailwind CSS 4, shadcn/ui, ReactFlow |
+| Backend | Node.js 20, Fastify 5, TypeScript, Prisma 6 |
+| Database | PostgreSQL 16 |
+| Queue | BullMQ 5 + Redis 7 |
+| Auth | JWT (access + refresh tokens), OAuth2 (GitHub / Google / Microsoft) |
+| i18n | next-intl (English default) |
+| Testing | Vitest 2 |
 
 ---
 

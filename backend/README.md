@@ -1,217 +1,163 @@
-# Backend - QAuthority API
+# Backend — QAuthority API
 
 Fastify-based REST API for QAuthority, built with TypeScript and Prisma ORM.
 
 ## Stack
 
-- **Runtime**: Node.js 22
+- **Runtime**: Node.js 20+
 - **Framework**: Fastify 5
 - **ORM**: Prisma 6
-- **Database**: PostgreSQL 16
-- **Cache/Queue**: Redis 7
+- **Database**: PostgreSQL 16 (DB name: `qauthority`)
+- **Cache/Queue**: Redis 7 + BullMQ 5
 
-## Prerequisites
+---
 
-- Node.js 22+
-- PostgreSQL 16+ (local or container)
-- Redis 7+ (local or container)
+## Local Development Setup
 
-## Setup Environment
+### Prerequisites
 
-Copy the appropriate environment file from the root directory:
+- Node.js 20+
+- PostgreSQL 16+ running locally
+- Redis 7+ running locally
+
+### 1. Environment
 
 ```bash
-# For local development
-cp ../.env.local .env
+# From the repo root, copy the example env:
+cp .env.example .env
 
-# For Docker/Podman
-cp ../.env.podman .env
+# Then copy it into backend/ as well:
+cp .env backend/.env
 ```
 
-## Database Setup
+Edit `.env` — key variables:
 
-Make sure PostgreSQL is running (local or container), then:
-
-```bash
-# Generate Prisma client
-npx prisma generate
-
-# Run migrations (creates tables)
-npx prisma migrate dev --name init
-
-# Seed initial data (creates admin user)
-npx prisma db seed
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/qauthority
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=change-me-to-a-strong-secret-min-32-chars
+ENCRYPTION_KEY=<64-char hex string>
+ADMIN_EMAIL=admin@qauthority.com
+ADMIN_PASSWORD=Changeme123!
 ```
 
-## Run Development Server
+### 2. Install and start
 
 ```bash
+cd backend
 npm install
-npm run dev
+npx prisma migrate deploy   # apply all migrations
+npx prisma db seed          # seed admin, groups, demo project
+npm run dev                 # http://localhost:3001
 ```
 
-The API will be available at `http://localhost:3001`.
+---
 
-## Docker/Podman Deployment
+## Docker Setup
 
-### First Time Setup
+The backend image is built and managed from the root `docker-compose.yml`.
 
 ```bash
-# Build image
-cd ..
-podman build -t qauthority-api:latest backend/
+# Full stack with local PostgreSQL + Redis:
+docker compose --profile local-db up
 
-# Run container
-podman run -d \
-  --name qauthority-api \
-  --network qauthority-internal \
-  -p 3001:3001 \
-  --env-file .env.podman \
-  qauthority-api:latest
+# Full stack with an external DB (set DATABASE_URL in .env first):
+docker compose up
 ```
 
-### After Code Changes
+The container entrypoint automatically:
+1. Waits for PostgreSQL to be ready
+2. Runs `prisma migrate deploy`
+3. Seeds the database if the admin user does not exist yet
+4. Starts the server
 
-Rebuild and restart:
+To rebuild after code changes:
 
 ```bash
-podman rm -f qauthority-api
-podman build -t qauthority-api:latest backend/
-podman run -d \
-  --name qauthority-api \
-  --network qauthority-internal \
-  -p 3001:3001 \
-  --env-file .env.podman \
-  qauthority-api:latest
+docker compose build qauthority-api
+docker compose --profile local-db up
 ```
 
-The container automatically runs migrations and seed on first boot.
+---
 
-## Development
-
-### Available Scripts
+## Available Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Compile TypeScript to JavaScript |
+| `npm run dev` | Start dev server with hot reload |
+| `npm run build` | Compile TypeScript |
 | `npm start` | Run production server |
-| `npm test` | Run test suite |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:migrate` | Run database migrations |
-| `npm run db:seed` | Seed database with initial data |
-| `npm run db:studio` | Open Prisma Studio (database GUI) |
+| `npm test` | Run test suite (Vitest) |
+| `npm run db:generate` | Regenerate Prisma client |
+| `npm run db:migrate` | Create + apply a new migration |
+| `npm run db:seed` | Seed the database |
+| `npm run db:studio` | Open Prisma Studio (DB GUI) |
 
-### Database Commands
+### Useful Prisma commands
 
 ```bash
-# Create new migration
+# Create a new migration
 npx prisma migrate dev --name <migration-name>
 
-# Apply migrations (production)
+# Apply migrations (production / Docker)
 npx prisma migrate deploy
 
-# Reset database (development only)
+# Reset database — development only, destroys all data
 npx prisma migrate reset --force
 
-# View database in browser
+# Inspect DB in the browser
 npx prisma studio
 ```
 
-### Project Structure
+---
+
+## Project Structure
 
 ```
 src/
-├── infrastructure/     # External services (DB, cache, mail)
-├── interfaces/         # HTTP layer (routes, plugins, middleware)
+├── infrastructure/     # DB, cache, mail, storage
+├── interfaces/         # HTTP routes, middleware, plugins
 ├── services/           # Business logic
-├── utils/             # Utilities and helpers
-├── config.ts          # Environment validation
-├── app.ts             # Fastify app factory
-└── index.ts           # Entry point
+├── utils/              # Errors, helpers
+├── config.ts           # Environment validation
+├── app.ts              # Fastify app factory
+└── index.ts            # Entry point
+prisma/
+├── schema.prisma       # Data model
+├── seed.ts             # Main seed entry point
+└── seed/               # Seed modules (groups, salesPlatform, …)
 ```
 
-## API Documentation
+---
 
-When the server is running, access Swagger UI at:
+## API
 
-```
-http://localhost:3001/docs
-```
+Swagger UI (when running locally): `http://localhost:3001/docs`
 
-### Key Endpoints
+### Auth endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
+| Method | Path | Description |
+|--------|------|-------------|
 | POST | `/api/v1/auth/login` | Email/password login |
 | POST | `/api/v1/auth/register` | User registration |
 | POST | `/api/v1/auth/refresh` | Refresh access token |
-| POST | `/api/v1/auth/logout` | Logout (revoke token) |
+| POST | `/api/v1/auth/logout` | Logout |
 | POST | `/api/v1/auth/forgot-password` | Request password reset |
-| POST | `/api/v1/auth/reset-password` | Reset password with token |
-| PATCH | `/api/v1/auth/change-password` | Change password (authenticated) |
-| GET | `/api/v1/profile` | Get current user profile |
-| PATCH | `/api/v1/profile` | Update profile |
-| GET | `/api/v1/admin/users` | List all users (admin) |
-| GET | `/api/v1/health` | Health check |
+| POST | `/api/v1/auth/reset-password` | Reset password |
+| PATCH | `/api/v1/auth/change-password` | Change password (auth required) |
 
-### Authentication
-
-All protected routes require a Bearer token:
-
+All protected routes require:
 ```
 Authorization: Bearer <access_token>
 ```
 
-Tokens expire in 8 hours by default. Use `/auth/refresh` to get new tokens.
-
-## Environment Variables
-
-See `.env.example` for all available options:
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | - | PostgreSQL connection string |
-| `DATABASE_POOL_URL` | No | DATABASE_URL | Pooled connection URL |
-| `REDIS_URL` | Yes | - | Redis connection string |
-| `JWT_SECRET` | Yes | - | JWT signing secret (min 32 chars) |
-| `JWT_EXPIRES_IN` | No | 8h | Access token expiry |
-| `JWT_REFRESH_EXPIRES_IN` | No | 30d | Refresh token expiry |
-| `ENCRYPTION_KEY` | Yes | - | 64-char hex key for AES-256-GCM |
-| `AUTH_MODE` | No | both | Auth mode: local, oauth, both |
-| `ALLOW_REGISTRATION` | No | false | Allow self-registration |
-| `ADMIN_EMAIL` | Yes | - | Initial admin email |
-| `ADMIN_PASSWORD` | Yes | - | Initial admin password |
+---
 
 ## Testing
 
 ```bash
-# Run all tests
-npm test
-
-# Watch mode
-npm run test:watch
+npm test              # run all tests
+npm run test:watch    # watch mode
 ```
 
-## Docker
-
-### Build Image
-
-```bash
-docker build -t qauthority-api:latest backend/
-# or
-podman build -t qauthority-api:latest backend/
-```
-
-### Run Container
-
-```bash
-docker run -d \
-  --name qauthority-api \
-  --network qauthority-network \
-  -p 3001:3001 \
-  --env-file .env \
-  qauthority-api:latest
-```
-
-For full-stack deployment, see the [root README](../README.md).
+Tests use Vitest with the real database (no mocks). Make sure `DATABASE_URL` points to a test-safe database before running.
