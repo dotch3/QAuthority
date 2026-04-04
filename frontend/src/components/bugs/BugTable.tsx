@@ -504,7 +504,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                 </div>
                 <div>
                   <p className="text-muted-foreground">Source</p>
-                  <p>{selectedBug.source.label}</p>
+                  <p>{selectedBug.source?.label ?? "—"}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Reported By</p>
@@ -532,7 +532,7 @@ export function BugTable({ projectId, executionId, onRefresh, onCreateBug }: Bug
                     className="inline-flex items-center text-sm text-blue-500 hover:underline"
                   >
                     <ExternalLink className="mr-1 h-3 w-3" />
-                    View in {selectedBug.source.label}
+                    View in {selectedBug.source?.label ?? "external tracker"}
                   </a>
                 </div>
               )}

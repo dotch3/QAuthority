@@ -27,7 +27,7 @@ export interface Bug {
     color: string
   }
   sourceId: string
-  source: {
+  source?: {
     id: string
     value: string
     label: string
