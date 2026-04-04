@@ -27,7 +27,7 @@ export function BlockPalette({ onAdd }: { onAdd: (type: string, label: string) =
         <button
           key={b.type}
           onClick={() => onAdd(b.type, b.label)}
-          className={`w-full text-left text-xs px-2 py-1.5 rounded border ${b.color} hover:opacity-80 transition-opacity`}
+          className={`w-full text-left text-xs px-2 py-1.5 rounded border text-gray-900 ${b.color} hover:opacity-80 transition-opacity`}
         >
           {b.label}
         </button>
