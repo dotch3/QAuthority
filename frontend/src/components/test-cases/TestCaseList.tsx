@@ -443,6 +443,64 @@ export function TestCaseFormDialog({
           )}
 
           <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="priority">
+                  Priority <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="priority"
+                  value={formData.priorityId}
+                  onChange={(e) => {
+                    setFormData({ ...formData, priorityId: e.target.value })
+                    if (errors.priorityId)
+                      setErrors({ ...errors, priorityId: undefined })
+                  }}
+                  className={`w-full h-10 px-3 rounded-md border bg-background text-sm ${
+                    errors.priorityId ? "border-destructive" : "border-input"
+                  }`}
+                >
+                  <option value="">Select priority</option>
+                  {priorities.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.priorityId && (
+                  <p className="text-sm text-destructive">{errors.priorityId}</p>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="type">
+                  Type <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="type"
+                  value={formData.typeId}
+                  onChange={(e) => {
+                    setFormData({ ...formData, typeId: e.target.value })
+                    if (errors.typeId)
+                      setErrors({ ...errors, typeId: undefined })
+                  }}
+                  className={`w-full h-10 px-3 rounded-md border bg-background text-sm ${
+                    errors.typeId ? "border-destructive" : "border-input"
+                  }`}
+                >
+                  <option value="">Select type</option>
+                  {types.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.typeId && (
+                  <p className="text-sm text-destructive">{errors.typeId}</p>
+                )}
+              </div>
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="title">
                 Title <span className="text-destructive">*</span>
@@ -551,64 +609,6 @@ export function TestCaseFormDialog({
                   suiteId={suiteId} 
                 />
               )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="priority">
-                  Priority <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  id="priority"
-                  value={formData.priorityId}
-                  onChange={(e) => {
-                    setFormData({ ...formData, priorityId: e.target.value })
-                    if (errors.priorityId)
-                      setErrors({ ...errors, priorityId: undefined })
-                  }}
-                  className={`w-full h-10 px-3 rounded-md border bg-background text-sm ${
-                    errors.priorityId ? "border-destructive" : "border-input"
-                  }`}
-                >
-                  <option value="">Select priority</option>
-                  {priorities.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.priorityId && (
-                  <p className="text-sm text-destructive">{errors.priorityId}</p>
-                )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="type">
-                  Type <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  id="type"
-                  value={formData.typeId}
-                  onChange={(e) => {
-                    setFormData({ ...formData, typeId: e.target.value })
-                    if (errors.typeId)
-                      setErrors({ ...errors, typeId: undefined })
-                  }}
-                  className={`w-full h-10 px-3 rounded-md border bg-background text-sm ${
-                    errors.typeId ? "border-destructive" : "border-input"
-                  }`}
-                >
-                  <option value="">Select type</option>
-                  {types.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.typeId && (
-                  <p className="text-sm text-destructive">{errors.typeId}</p>
-                )}
-              </div>
             </div>
 
             {projectMembers.length > 0 && (
