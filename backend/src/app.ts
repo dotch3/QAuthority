@@ -33,6 +33,7 @@ import { workflowRoutes } from './interfaces/http/routes/workflows.js'
 import { aiCodegenRoutes } from './interfaces/http/routes/aiCodegen.js'
 import { testRunRoutes } from './interfaces/http/routes/testRuns.js'
 import { ciRunnerRoutes } from './interfaces/http/routes/ciRunners.js'
+import { processTemplateRoutes } from './interfaces/http/routes/processTemplates.js'
 import { logger } from './logger.js'
 import { NotFoundError, ForbiddenError, BadRequestError, UnauthorizedError } from './utils/errors.js'
 
@@ -126,6 +127,7 @@ export async function buildApp() {
   await app.register(aiCodegenRoutes, { prefix: '/api/v1' })
   await app.register(testRunRoutes, { prefix: '/api/v1' })
   await app.register(ciRunnerRoutes, { prefix: '/api/v1' })
+  await app.register(processTemplateRoutes, { prefix: '/api/v1' })
 
   return app
 }

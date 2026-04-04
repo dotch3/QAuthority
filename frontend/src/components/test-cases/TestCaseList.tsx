@@ -22,6 +22,8 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
+  History,
+  RotateCcw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -144,6 +146,115 @@ interface TestCaseListProps {
   onSelect?: (testCase: TestCaseRow) => void
 }
 
+interface VersionRecord {
+  id: string
+  version: number
+  title: string
+  description?: string
+  createdAt: string
+  createdBy?: { name?: string; email: string }
+}
+
+function VersionHistoryDialog({
+  isOpen,
+  onClose,
+  suiteId,
+  testCase,
+  onRestored,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  suiteId: string
+  testCase: TestCaseRow
+  onRestored: () => void
+}) {
+  const [versions, setVersions] = useState<VersionRecord[]>([])
+  const [loading, setLoading] = useState(false)
+  const [restoring, setRestoring] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+    setLoading(true)
+    api
+      .get<VersionRecord[]>(`/suites/${suiteId}/cases/${testCase.id}/versions`)
+      .then(setVersions)
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [isOpen, suiteId, testCase.id])
+
+  const restore = async (version: number) => {
+    setRestoring(version)
+    try {
+      await api.post(`/suites/${suiteId}/cases/${testCase.id}/versions/${version}/restore`, {})
+      toast.success(`Restored to v${version}`)
+      onRestored()
+      onClose()
+    } catch {
+      toast.error("Failed to restore version")
+    } finally {
+      setRestoring(null)
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <History className="h-4 w-4" />
+            Version History
+          </DialogTitle>
+          <DialogDescription className="font-mono text-xs">
+            {testCase.externalId || testCase.id.substring(0, 8)} — {testCase.title}
+          </DialogDescription>
+        </DialogHeader>
+
+        {loading ? (
+          <div className="space-y-2 py-4">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-14 rounded" />
+            ))}
+          </div>
+        ) : versions.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">No version history found</p>
+        ) : (
+          <div className="divide-y">
+            {versions.map((v) => (
+              <div key={v.id} className="flex items-start justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs font-mono flex-shrink-0">
+                      v{v.version}
+                    </Badge>
+                    <span className="text-sm font-medium truncate">{v.title}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(v.createdAt).toLocaleString()}
+                    {v.createdBy && ` · ${v.createdBy.name || v.createdBy.email}`}
+                  </p>
+                  {v.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{v.description}</p>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="flex-shrink-0 h-7 px-2 text-xs"
+                  disabled={restoring === v.version}
+                  onClick={() => restore(v.version)}
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  {restoring === v.version ? "Restoring…" : "Restore"}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function EvidenceManagerForTestCase({ caseId, suiteId }: { caseId: string; suiteId: string }) {
   const { selectedProject } = useProject()
   if (!selectedProject) return null
@@ -200,6 +311,7 @@ export function TestCaseFormDialog({
   const [errors, setErrors] = useState<TestCaseFormErrors>({})
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [projectMembers, setProjectMembers] = useState<Array<{ id: string; name: string; email: string; avatarUrl?: string }>>([])
+  const [showVersionHistory, setShowVersionHistory] = useState(false)
   const { enums: caseEnums } = useEnums(["test_priority", "test_type"])
   const priorities = caseEnums["test_priority"] ?? []
   const types = caseEnums["test_type"] ?? []
@@ -278,6 +390,7 @@ export function TestCaseFormDialog({
   }
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
@@ -286,21 +399,33 @@ export function TestCaseFormDialog({
               {testCase ? "Edit Test Case" : "Create Test Case"}
             </DialogTitle>
             {testCase && (
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground font-mono">
-                  {testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`}
-                </p>
-                <button
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground font-mono">
+                    {testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`}
+                  </p>
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:text-foreground"
+                    title="Copy ID for CI tagging (e.g. @TC-CHK-0001 in test name)"
+                    onClick={() => {
+                      const id = testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`
+                      navigator.clipboard.writeText(`@${id}`)
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  </button>
+                </div>
+                <Button
                   type="button"
-                  className="text-muted-foreground hover:text-foreground"
-                  title="Copy ID for CI tagging (e.g. @TC-CHK-0001 in test name)"
-                  onClick={() => {
-                    const id = testCase.externalId || `TC-${testCase.id.substring(0, 8).toUpperCase()}`
-                    navigator.clipboard.writeText(`@${id}`)
-                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-muted-foreground"
+                  onClick={() => setShowVersionHistory(true)}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                </button>
+                  <History className="h-3.5 w-3.5 mr-1" />
+                  History
+                </Button>
               </div>
             )}
             <DialogDescription>
@@ -585,6 +710,17 @@ export function TestCaseFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+
+    {testCase && showVersionHistory && (
+      <VersionHistoryDialog
+        isOpen={showVersionHistory}
+        onClose={() => setShowVersionHistory(false)}
+        suiteId={suiteId}
+        testCase={testCase}
+        onRestored={onClose}
+      />
+    )}
+  </>
   )
 }
 
