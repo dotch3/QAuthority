@@ -68,6 +68,9 @@ export async function seedSalesPlatform() {
     await prisma.testPlan.deleteMany({ where: { projectId: 'proj-sales' } })
     await prisma.eTCharter.deleteMany({ where: { id: { startsWith: 'etc-sales-' } } })
     await prisma.defect.deleteMany({ where: { id: { startsWith: 'bug-sales-' } } })
+    await prisma.workflowEdge.deleteMany({ where: { workflow: { projectId: 'proj-sales' } } })
+    await prisma.workflowBlock.deleteMany({ where: { workflow: { projectId: 'proj-sales' } } })
+    await prisma.qAWorkflow.deleteMany({ where: { projectId: 'proj-sales' } })
     await prisma.project.delete({ where: { id: 'proj-sales' } })
   }
 
@@ -1269,6 +1272,93 @@ export async function seedSalesPlatform() {
     })
   }
 
+  // ── ISTQB QA Workflow ─────────────────────────────────────────────────────────
+  // Full ISTQB-aligned test process: Planning → Analysis → Design →
+  // Implementation → Environment → Execution → Monitoring → Sign-Off
+  const workflow = await prisma.qAWorkflow.create({
+    data: {
+      name: 'ISTQB Test Process — Online Sales Platform',
+      description: 'Full ISTQB-aligned QA workflow for the Online Sales Platform: from project kick-off and risk analysis through test design, execution, monitoring, and formal sign-off.',
+      projectId: project.id,
+      createdById: lead.id,
+    },
+  })
+
+  // Create blocks and capture their DB IDs
+  const blocks = await Promise.all([
+    // ── Phase 1: Planning ──────────────────────────────────────────────────────
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SUBPROCESS',    label: '1. Test Planning\n(objectives · scope · schedule · exit criteria)', posX: 80,  posY: 60,  config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'RACI_MATRIX',   label: 'RACI Matrix\n(QA Lead · Testers · Devs · PO · Stakeholders)',    posX: 420, posY: 60,  config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'NOTE',           label: 'Resource Allocation\n& Sprint Planning',                         posX: 760, posY: 60,  config: {} } }),
+
+    // ── Phase 2: Risk-Based Analysis ──────────────────────────────────────────
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'BRAINSTORMING',  label: 'Brainstorming\n(risks · what could fail · quality attributes)',   posX: 80,  posY: 240, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'RISK_ANALYSIS',  label: 'Risk Analysis\n(Impact × Probability matrix · prioritize suites)', posX: 420, posY: 240, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SUBPROCESS',    label: '2. Test Analysis\n(test conditions from requirements + risks)',    posX: 760, posY: 240, config: {} } }),
+
+    // ── Phase 3: Design & Implementation ──────────────────────────────────────
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'ORACLE_DEFINITION', label: 'Test Oracle Definition\n(expected results · acceptance criteria)', posX: 80,  posY: 420, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SUBPROCESS',    label: '3. Test Design\n(test cases · techniques · test data)',            posX: 420, posY: 420, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SUBPROCESS',    label: '4. Test Implementation\n(suites · priorities · assignments)',       posX: 760, posY: 420, config: {} } }),
+
+    // ── Phase 4: Environment & Execution Readiness ────────────────────────────
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'ENVIRONMENT_SETUP', label: 'Environment Setup\n(QA + Staging · test data · credentials)',   posX: 80,  posY: 600, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SANITY_SMOKE',   label: 'Sanity & Smoke Check\n(env health · API ping · login works)',      posX: 420, posY: 600, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'DECISION',       label: 'Environment\nReady?',                                              posX: 760, posY: 600, config: {} } }),
+
+    // ── Phase 5: Execution & Monitoring ──────────────────────────────────────
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SUBPROCESS',    label: '5. Test Execution\n(run test cases · log results · report bugs)',  posX: 420, posY: 780, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SUBPROCESS',    label: 'Test Monitoring & Control\n(pass rate · burndown · defect density)', posX: 80, posY: 780, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'DECISION',       label: 'All Critical\nDefects Fixed?',                                     posX: 760, posY: 780, config: {} } }),
+
+    // ── Phase 6: Regression & Sign-Off ───────────────────────────────────────
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SUBPROCESS',    label: 'Regression Testing\n(re-run failed · verify fixes)',               posX: 420, posY: 960, config: {} } }),
+    prisma.workflowBlock.create({ data: { workflowId: workflow.id, type: 'SIGN_OFF',       label: '6. Test Completion & Sign-Off\n(summary report · metrics · release decision)', posX: 760, posY: 960, config: {} } }),
+  ])
+
+  // Assign named references to block DB IDs
+  const [
+    bPlanning, bRaci, bResources,
+    bBrainstorm, bRisk, bAnalysis,
+    bOracle, bDesign, bImplement,
+    bEnvSetup, bSmoke, bEnvReady,
+    bExecution, bMonitoring, bDefectsFixed,
+    bRegression, bSignOff,
+  ] = blocks.map(b => b.id)
+
+  // Create all edges
+  const edges: { sourceBlockId: string; targetBlockId: string; label?: string }[] = [
+    // Phase 1 → 2
+    { sourceBlockId: bPlanning,   targetBlockId: bRaci },
+    { sourceBlockId: bPlanning,   targetBlockId: bBrainstorm },
+    { sourceBlockId: bRaci,       targetBlockId: bResources },
+    { sourceBlockId: bResources,  targetBlockId: bBrainstorm },
+    // Phase 2 (Risk analysis)
+    { sourceBlockId: bBrainstorm, targetBlockId: bRisk },
+    { sourceBlockId: bRisk,       targetBlockId: bAnalysis },
+    // Phase 2 → 3
+    { sourceBlockId: bAnalysis,   targetBlockId: bOracle },
+    { sourceBlockId: bAnalysis,   targetBlockId: bDesign },
+    { sourceBlockId: bOracle,     targetBlockId: bDesign },
+    { sourceBlockId: bDesign,     targetBlockId: bImplement },
+    // Phase 3 → 4
+    { sourceBlockId: bImplement,  targetBlockId: bEnvSetup },
+    { sourceBlockId: bEnvSetup,   targetBlockId: bSmoke },
+    { sourceBlockId: bSmoke,      targetBlockId: bEnvReady },
+    { sourceBlockId: bEnvReady,   targetBlockId: bExecution,   label: 'Yes' },
+    { sourceBlockId: bEnvReady,   targetBlockId: bEnvSetup,    label: 'No — fix env' },
+    // Phase 5
+    { sourceBlockId: bExecution,  targetBlockId: bMonitoring },
+    { sourceBlockId: bExecution,  targetBlockId: bDefectsFixed },
+    { sourceBlockId: bDefectsFixed, targetBlockId: bRegression, label: 'No — retest' },
+    { sourceBlockId: bRegression, targetBlockId: bExecution },
+    { sourceBlockId: bDefectsFixed, targetBlockId: bSignOff,   label: 'Yes' },
+  ]
+
+  for (const edge of edges) {
+    await prisma.workflowEdge.create({ data: { workflowId: workflow.id, ...edge } })
+  }
+
   console.log('✓ Seeded Online Sales Platform project')
   console.log(`  ↳ ${allCases.length} test cases across 4 suites`)
   console.log('  ↳ 2 test plans (UI + API)')
@@ -1276,4 +1366,5 @@ export async function seedSalesPlatform() {
   console.log('  ↳ 6 bugs linked to executions')
   console.log('  ↳ 3 test runs (2 completed, 1 in progress)')
   console.log('  ↳ 3 months of DORA + quality metrics')
+  console.log('  ↳ 1 ISTQB workflow diagram (17 blocks, 20 edges)')
 }
